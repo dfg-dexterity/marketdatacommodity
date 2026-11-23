@@ -1,0 +1,1732 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cotação de Commodities Agrícolas: boi, milho, soja, café e etanol na B3</title>
+  <meta name="description"
+    content="Boi gordo, milho, soja, café e etanol na B3: preços do pregão, curva de vencimentos, mercado físico, praças do CEPEA e histórico, com exportação para Excel e CSV." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#1B1B1B" />
+
+  <!-- Endereço público no domínio da Dexterity: a página do site que apresenta esta ferramenta
+       (ver site/paginas/commodities-agricolas.json e site/odoo-pagina-commodities-agricolas.html). -->
+  <link rel="canonical" href="https://www.dexterityit.com.br/commodities-agricolas" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="Dexterity IT Solutions" />
+  <meta property="og:title" content="Cotação de Commodities Agrícolas: boi, milho, soja, café e etanol na B3" />
+  <meta property="og:description"
+    content="Preços do pregão da B3, curva de vencimentos, mercado físico e praças para boi gordo, milho, soja, café e etanol, com histórico e exportação para Excel. Ferramenta gratuita da Dexterity." />
+  <meta property="og:url" content="https://www.dexterityit.com.br/commodities-agricolas" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://www.dexterityit.com.br/commodities-agricolas#ferramenta",
+        "name": "Cotação de Commodities Agrícolas",
+        "alternateName": "Boi gordo, milho, soja, café e etanol na B3",
+        "url": "https://www.dexterityit.com.br/commodities-agricolas",
+        "description": "Futuros agrícolas da B3 — boi gordo, milho, soja, café arábica, café conilon e etanol hidratado — com os preços de cada pregão, a curva de vencimentos, os indicadores do mercado físico publicados pela B3, as referências de soja e café no exterior, as praças do CEPEA e o histórico de cada contrato, com exportação para Excel e CSV.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "pt-BR",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+        "publisher": {
+          "@type": "ProfessionalService",
+          "@id": "https://www.dexterityit.com.br/#organizacao",
+          "name": "Dexterity IT Solutions",
+          "url": "https://www.dexterityit.com.br"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://www.dexterityit.com.br/" },
+          { "@type": "ListItem", "position": 2, "name": "Ferramentas", "item": "https://www.dexterityit.com.br/ferramentas" },
+          { "@type": "ListItem", "position": 3, "name": "Cotação de Commodities Agrícolas", "item": "https://www.dexterityit.com.br/commodities-agricolas" }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Figtree:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/dexterity.css" />
+
+  <!-- O modo de incorporação (?embed=1) é aplicado antes da primeira pintura,
+       para o iframe não piscar com a faixa de título e o rodapé. -->
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "1") document.documentElement.classList.add("modo-embutido");
+  </script>
+
+  <!-- Gráfico na abertura; o Excel (SheetJS, ~900 KB) só desce na primeira exportação. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ------------------------------------------------------------------
+     * Estilos próprios desta ferramenta. O sistema visual da marca (tokens,
+     * chrome, cartões, botões, tabela) vive em assets/dexterity.css.
+     * ------------------------------------------------------------------ */
+
+    [hidden] { display: none !important; }
+
+    main { width: var(--dxt-container); margin-inline: auto; padding: 32px 0 0; }
+
+    /* Ícones de traço — herdam currentColor. */
+    .ic {
+      width: 15px; height: 15px; flex: none;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .status {
+      font-family: var(--dxt-font-mono);
+      font-size: 0.6875rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dxt-rotulo);
+    }
+    .erro { color: #DD6953; }
+    .mono { font-family: var(--dxt-font-mono); }
+
+    .dxt-input[type="date"] { color-scheme: dark; }
+    .dxt-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.55); cursor: pointer; }
+    .dxt-input[type="date"]::-webkit-calendar-picker-indicator:hover { filter: invert(1) opacity(.9); }
+
+    /* ======================= FILTROS ======================= */
+
+    .faixa { margin-bottom: 16px; }
+    #chips, #chipsCepea { gap: 2px; }
+
+    .rng-group { display: flex; gap: 2px; flex-wrap: wrap; }
+    .rng {
+      padding: 5px 11px;
+      border: 1px solid transparent; background: transparent;
+      color: var(--dxt-muted);
+      font-family: var(--dxt-font-mono);
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer;
+      transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+    }
+    .rng:hover { color: var(--dxt-off); background: var(--dxt-elevate-1); }
+    .rng.active { border-color: var(--dxt-cerceta); color: var(--dxt-acc-txt); }
+    .rng:disabled { opacity: .4; cursor: default; }
+
+    .controles-data .dxt-input { width: 172px; }
+
+    .serie-info {
+      margin: 18px 0 0;
+      font-size: 0.875rem; line-height: 1.6;
+      color: var(--dxt-muted);
+    }
+    .serie-info b { color: var(--dxt-off); font-weight: 500; }
+    .serie-info a, .nota-linha a { color: var(--dxt-acc-txt); text-decoration: none; border-bottom: 1px solid rgba(0,179,172,.4); }
+    .serie-info a:hover, .nota-linha a:hover { color: var(--dxt-amarelo); border-bottom-color: rgba(255,164,54,.5); }
+
+    /* ======================= DADOS ======================= */
+
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+    .grid > * { min-width: 0; }
+    .span4 { grid-column: span 4; }
+    .span12 { grid-column: span 12; }
+
+    .kpi-title {
+      font-family: var(--dxt-font-mono);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--dxt-rotulo);
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-family: var(--dxt-font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.5rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--dxt-off);
+      overflow-wrap: anywhere;
+    }
+    .kpi-foot { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .row > strong {
+      font-family: var(--dxt-font-display);
+      font-size: 1.125rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.01em;
+    }
+    .subtitulo {
+      margin: 22px 0 0;
+      font-family: var(--dxt-font-mono);
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--dxt-rotulo);
+    }
+
+    .stats { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .stats .dxt-badge b { font-variant-numeric: tabular-nums; font-weight: 500; color: var(--dxt-off); }
+    .stats .dxt-badge--up b { color: var(--dxt-acc-txt); }
+    .stats .dxt-badge--down b { color: var(--dxt-amarelo); }
+
+    .area-grafico { position: relative; height: 360px; margin-top: 14px; }
+
+    .tabela-rolagem { overflow: auto; max-height: 560px; margin-top: 14px; }
+    .tabela-rolagem thead th { position: sticky; top: 0; z-index: 1; background: var(--dxt-surface); white-space: nowrap; }
+    #tbl thead th { cursor: pointer; }
+    #tbl thead th:hover { color: var(--dxt-off); }
+    .tabela-rolagem td { white-space: nowrap; }
+    .tabela-rolagem td.right { font-family: var(--dxt-font-mono); font-variant-numeric: tabular-nums; }
+    .tabela-rolagem td.sem-valor { color: var(--dxt-rotulo); }
+    .tabela-rolagem td.alta { color: var(--dxt-acc-txt); }
+    .tabela-rolagem td.baixa { color: var(--dxt-amarelo); }
+    .tabela-rolagem td.quebra { white-space: normal; min-width: 14rem; }
+    .seta { color: var(--dxt-acc-txt); }
+    .sem-registros { padding: 22px 0 8px; text-align: center; font-size: 0.875rem; color: var(--dxt-muted); }
+
+    .nota-linha { margin: 12px 0 0; font-size: 0.8125rem; line-height: 1.6; color: var(--dxt-rotulo); }
+
+    /* Nota (roxo): informação, não erro. */
+    .nota {
+      margin: 12px 0 0; padding: 10px 14px;
+      border-left: 2px solid var(--dxt-roxo);
+      background: rgba(152, 86, 154, .08);
+      font-size: 0.8125rem; line-height: 1.6; color: #C08FC2;
+    }
+
+    /* ======================= PRAÇAS (CEPEA) ======================= */
+
+    .moldura-cepea {
+      margin-top: 14px; padding: 12px;
+      border: 1px solid var(--dxt-line);
+      background: #242424;
+      max-width: 640px;
+    }
+    .moldura-cepea iframe { display: block; width: 100%; border: 0; background: #242424; }
+
+    /* ======================= HISTÓRICO ======================= */
+
+    .controles-hist { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .controles-hist .dxt-select { min-width: 220px; }
+
+    .noscript {
+      margin: 24px 0 0; padding: 16px;
+      border: 1px solid rgba(152, 86, 154, .45);
+      font-size: 0.875rem; color: var(--dxt-muted);
+    }
+
+    @media (max-width: 980px) {
+      .span4 { grid-column: span 12; }
+      .dxt-controls { width: 100%; }
+      .controles-data .dxt-input { flex: 1; min-width: 0; width: auto; }
+    }
+
+    /* Celular: como nas demais ferramentas, as fileiras de filtro rolam na
+       horizontal em vez de quebrar em várias linhas. */
+    @media (max-width: 640px) {
+      .dxt-pagehead h1 { font-size: clamp(2rem, 9vw, 3.5rem); }
+      #chips, #chipsCepea, .rng-group {
+        flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+      }
+      #chips::-webkit-scrollbar, #chipsCepea::-webkit-scrollbar, .rng-group::-webkit-scrollbar { display: none; }
+      #chips .dxt-chip, #chipsCepea .dxt-chip, .rng { flex: none; white-space: nowrap; }
+      .controles-data > .status { display: none; }
+      .controles-data .dxt-btn:not(.dxt-btn--icon) { flex: 1 1 100%; }
+      .controles-hist .dxt-select, .controles-hist .dxt-btn { flex: 1 1 100%; }
+      .area-grafico { height: 280px; }
+    }
+
+    /* ============ MODO INCORPORADO (?embed=1 — iframe no site ou no Notion) ============
+       A página que incorpora já tem título, texto e rodapé: aqui fica só a
+       ferramenta, na largura toda do iframe. */
+    .modo-embutido { --dxt-container: calc(100% - 32px); }
+    .modo-embutido .dxt-topbar { position: static; backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--dxt-base); }
+    .modo-embutido .dxt-topbar-inner { padding: 10px 0; }
+    .modo-embutido .dxt-topbar .dxt-logo { height: 20px; }
+    .modo-embutido .dxt-pagehead { display: none; }
+    .modo-embutido main { padding-top: 16px; }
+    .modo-embutido .dxt-footer-inner { display: none; }
+    .modo-embutido .dxt-footer { margin-top: 32px; }
+    .modo-embutido .dxt-footer-nota { border-top: 0; }
+    .modo-embutido .tabela-rolagem { max-height: 440px; }
+    /* Tabelas curtas (até uns 20 contratos) aparecem inteiras: só rolam na horizontal */
+    .tabela-rolagem.inteira, .modo-embutido .tabela-rolagem.inteira { max-height: none; }
+  </style>
+</head>
+
+<body>
+  <!-- Sprite de ícones (traço, herdam currentColor) -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="ic-chart" viewBox="0 0 24 24">
+      <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 14l4-4 3 3 5-6"/>
+    </symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24">
+      <path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/>
+    </symbol>
+    <symbol id="ic-esq" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+    <symbol id="ic-dir" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  </svg>
+
+  <!-- ===================== Barra de marca ===================== -->
+  <div class="dxt-topbar">
+    <div class="dxt-topbar-inner">
+      <a href="https://www.dexterityit.com.br" aria-label="Dexterity IT Solutions — ir para o site">
+        <svg class="dxt-logo" viewBox="0 0 445.4 100" role="img" aria-label="Dexterity IT Solutions"
+             style="--mk:var(--dxt-off);--acc:var(--dxt-cerceta)">
+          <g transform="scale(0.64475) translate(-206.8,-19)">
+                <path fill="var(--mk)" d="M306.8,41.1c0,6.7-1.3,13.1-3.8,19.1s-6.1,11.4-10.8,16.1c-4.7,4.7-10.2,8.4-16.1,10.8c-6,2.5-12.4,3.8-19.1,3.8c-0.2,0-1.8,0-3.4,0c-1.1,0-2.2,0-2.8,0.1c-0.4,0-0.7-0.2-0.9-0.5l-21.6-35.4l-21-34.4c-0.4-0.6,0.1-1.5,0.8-1.5h48.5h49.2c0.5,0,1,0.4,1,1v10V41.1z"/>
+                <path fill="var(--acc)" d="M318.4,40.7c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0.1,6.6,1.4,12.9,3.9,18.8c2.5,5.9,6.1,11.3,10.7,15.9c4.7,4.7,10.2,8.4,16.1,10.8c6,2.5,12.4,3.8,19.1,3.8h17.4h15.7c0.8,0,1.2-0.8,0.8-1.5l-10-16.4l-10.9-17.8c-6.8-11.2-14.9-20.2-24.5-26.4c-9.6-6.2-20.8-9.6-33.9-9.6h-3.4c-0.5,0-1,0.4-1,1V30V40.7z"/>
+                <path fill="var(--mk)" d="M306.8,152.3c0-6.7-1.3-13.1-3.8-19.1s-6.1-11.4-10.8-16.1c-4.7-4.7-10.2-8.4-16.1-10.8c-6-2.5-12.4-3.8-19.1-3.8c-0.2,0-1.8,0-3.4,0c-1.1,0-2.2,0-2.8-0.1c-0.4,0-0.7,0.2-0.9,0.5l-21.6,35.4l-21,34.4c-0.4,0.6,0.1,1.5,0.8,1.5h48.5h49.2c0.5,0,1-0.4,1-1v-10V152.3z"/>
+                <path fill="var(--mk)" d="M368.2,102.5c-6.7,0-13.1,1.3-19.1,3.8s-11.4,6.1-16.1,10.8c-4.7,4.7-8.3,10.1-10.8,16.1c-2.5,5.9-3.8,12.4-3.8,19c0,0,0,0.1,0,0.1s0,0.1,0,0.1c0,0,0,0,0,0c0,0,0,0,0,0v5.1v5.1v5.8v4.8c0,0.5,0.5,1,1,1c12.5-0.4,24.5-3.9,35-9.9c10.8-6.2,20.1-15.1,26.8-26.1l10.9-17.8l10-16.3c0.4-0.6-0.1-1.5-0.8-1.5h-15.7H368.2z"/>
+              </g>
+          <g transform="translate(152,17) scale(0.51123) translate(-17.5,-217.5)">
+                <path fill="var(--mk)" d="M41.5,346.9h-23c-0.4,0-0.8-0.4-0.8-0.8V218.6c0-0.4,0.4-0.8,0.8-0.8h23c10.5,0,19.9,5.4,26.3,15.3c7.2,11,10.8,27.6,10.8,49.3c0,21.7-3.6,38.3-10.8,49.3C61.3,341.5,52,346.9,41.5,346.9zM33.9,330.7h7.6c13.1,0,21-18.1,21-48.4s-7.8-48.4-21-48.4h-7.6V330.7z"/>
+                <path fill="var(--mk)" d="M141.3,233.2v-14.6c0-0.4-0.4-0.8-0.8-0.8H93.6c-0.4,0-0.8,0.4-0.8,0.8v55.6v16.2v55.6c0,0.4,0.4,0.8,0.8,0.8h46.9c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8H109v-40.2h26.4c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8H109V234h31.5C141,234,141.3,233.7,141.3,233.2z"/>
+                <path fill="var(--mk)" d="M148.8,346.9h15.7c0.3,0,0.6-0.2,0.8-0.5l17-42.3l17,42.3c0.1,0.3,0.4,0.5,0.8,0.5h15.7c0.6,0,1-0.6,0.8-1.1L191,282.3l19.4-48.3h22.8v112c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V234H274c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-24.6h-16.2h-16.3H200c-0.3,0-0.6,0.2-0.8,0.5l-17,42.3l-17-42.3c-0.1-0.3-0.4-0.5-0.8-0.5h-15.7c-0.6,0-1,0.6-0.8,1.1l25.5,63.4l-25.5,63.4C147.9,346.3,148.3,346.9,148.8,346.9z"/>
+                <path fill="var(--mk)" d="M332.7,233.2v-14.6c0-0.4-0.4-0.8-0.8-0.8H285c-0.4,0-0.8,0.4-0.8,0.8v55.6v16.2v55.6c0,0.4,0.4,0.8,0.8,0.8h46.9c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-31.5v-40.2h26.4c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-26.4V234h31.5C332.3,234,332.7,233.7,332.7,233.2z"/>
+                <path fill="var(--mk)" d="M363.1,297.1v-16.2V234h4c13.9,0,21,7.9,21,23.4c0,12.8-4.7,20.3-14.3,22.7l-9,2.2l25.7,64c0.1,0.3,0.4,0.5,0.8,0.5H407c0.6,0,1-0.6,0.8-1.1l-21.4-53.3c11.5-6.3,18-18.6,18-35c0-29.2-19.2-39.6-37.1-39.6h-19.4c-0.4,0-0.8,0.4-0.8,0.8v62.2v16.2v49c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V297.1z"/>
+                <path fill="var(--acc)" d="M434,346.9h-14.6c-0.4,0-0.8-0.4-0.8-0.8V218.7c0-0.4,0.4-0.8,0.8-0.8H434c0.4,0,0.8,0.4,0.8,0.8v127.4C434.8,346.5,434.4,346.9,434,346.9z"/>
+                <path fill="var(--acc)" d="M485.9,217.9h-16.2h-17.1h-7.4c-0.4,0-0.8,0.4-0.8,0.8v14.6c0,0.4,0.4,0.8,0.8,0.8h24.5v112c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V234h25.9c0.5,0,0.8-0.5,0.6-0.9l-6-14.9c-0.1-0.2-0.3-0.4-0.6-0.4H485.9z"/>
+                <path fill="var(--mk)" d="M591,217.9h-15.7c-0.3,0-0.6,0.2-0.8,0.5L554.2,269l-20.3-50.6c-0.1-0.3-0.4-0.5-0.8-0.5h-6.5h-9.5c-0.5,0-0.8,0.5-0.6,0.9l6.2,15.3h0l23.4,58.2V346c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8v-53.8l29.4-73.3C591.9,218.4,591.5,217.9,591,217.9z"/>
+              </g>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===================== Título da página ===================== -->
+  <header class="dxt-pagehead">
+    <div class="dxt-pagehead-inner">
+      <div style="min-width:0">
+        <span class="dxt-eyebrow">Dados de mercado · B3</span>
+        <h1>Commodities Agrícolas</h1>
+        <p>
+          Boi gordo, milho, soja, café e etanol na B3 — preços do pregão, curva de vencimentos,
+          mercado físico, praças do CEPEA e histórico de cada contrato, com exportação para Excel e CSV.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= FILTROS ================= -->
+    <div class="dxt-toolbar faixa">
+      <div class="dxt-controls" id="chips" role="group" aria-label="Mercadoria"></div>
+    </div>
+
+    <form class="dxt-toolbar" id="form" novalidate>
+      <div class="dxt-controls controles-data">
+        <span class="status">Pregão</span>
+        <button type="button" id="btnAnterior" class="dxt-btn dxt-btn--ghost dxt-btn--icon" title="Pregão anterior" aria-label="Pregão anterior"><svg class="ic" aria-hidden="true"><use href="#ic-esq"/></svg></button>
+        <input type="date" id="data" class="dxt-input" title="Data do pregão" aria-label="Data do pregão" min="2022-01-03" />
+        <button type="button" id="btnProximo" class="dxt-btn dxt-btn--ghost dxt-btn--icon" title="Pregão seguinte" aria-label="Pregão seguinte"><svg class="ic" aria-hidden="true"><use href="#ic-dir"/></svg></button>
+        <button type="submit" id="btn" class="dxt-btn"><svg class="ic" aria-hidden="true"><use href="#ic-chart"/></svg>Carregar</button>
+      </div>
+      <div class="dxt-controls">
+        <button type="button" id="btnCsv" class="dxt-btn dxt-btn--ghost dxt-btn--sm" disabled><svg class="ic" aria-hidden="true"><use href="#ic-download"/></svg>CSV</button>
+        <button type="button" id="btnXlsx" class="dxt-btn dxt-btn--sm" disabled><svg class="ic" aria-hidden="true"><use href="#ic-download"/></svg>Excel</button>
+      </div>
+    </form>
+
+    <p class="serie-info" id="info"></p>
+
+    <div class="grid">
+      <!-- ================= INDICADORES ================= -->
+      <div class="dxt-card dxt-card-body span4">
+        <div class="kpi-title" id="kpi1Titulo">1º vencimento</div>
+        <div class="kpi-value" id="kpi1Valor">—</div>
+        <div class="kpi-foot" id="kpi1Pe"></div>
+      </div>
+      <div class="dxt-card dxt-card-body span4">
+        <div class="kpi-title" id="kpi2Titulo">Mercado físico</div>
+        <div class="kpi-value" id="kpi2Valor">—</div>
+        <div class="kpi-foot" id="kpi2Pe"></div>
+      </div>
+      <div class="dxt-card dxt-card-body span4">
+        <div class="kpi-title" id="kpi3Titulo">Curva</div>
+        <div class="kpi-value" id="kpi3Valor">—</div>
+        <div class="kpi-foot" id="kpi3Pe"></div>
+      </div>
+
+      <!-- ================= CURVA ================= -->
+      <div class="dxt-card dxt-card-body span12">
+        <div class="row">
+          <strong>Curva de preços</strong>
+          <span class="status" id="status" role="status" aria-live="polite">—</span>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <div class="rng-group" id="grupoComparar" role="group" aria-label="Comparar a curva com">
+            <button type="button" class="rng" data-comparar="nenhum">Sem comparação</button>
+            <button type="button" class="rng" data-comparar="anterior">Pregão anterior</button>
+            <button type="button" class="rng" data-comparar="semana">1 semana</button>
+            <button type="button" class="rng" data-comparar="mes">1 mês</button>
+          </div>
+          <div class="rng-group" id="grupoMoeda" role="group" aria-label="Moeda do gráfico e da tabela" hidden>
+            <button type="button" class="rng" data-moeda="original">Em US$</button>
+            <button type="button" class="rng" data-moeda="brl">Em R$</button>
+          </div>
+        </div>
+        <div class="stats" id="statsCurva"></div>
+        <div class="area-grafico">
+          <canvas id="chartCurva" aria-label="Curva de preços por vencimento" role="img"></canvas>
+        </div>
+        <p class="nota-linha" id="notaCurva"></p>
+      </div>
+
+      <!-- ================= PREGÃO ================= -->
+      <div class="dxt-card dxt-card-body span12">
+        <div class="row">
+          <strong>Pregão na B3</strong>
+          <span class="status" id="count">—</span>
+        </div>
+        <div class="tabela-rolagem inteira">
+          <table id="tbl" class="dxt-table">
+            <thead><tr id="cabecalho"></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="sem-registros" id="vazio" hidden>Sem contratos desta mercadoria no pregão.</div>
+        </div>
+        <p class="nota-linha" id="notaTabela"></p>
+      </div>
+
+      <!-- ================= FÍSICO E REFERÊNCIAS ================= -->
+      <div class="dxt-card dxt-card-body span12">
+        <div class="row">
+          <strong>Mercado físico e referências</strong>
+          <span class="status" id="statusFisico">—</span>
+        </div>
+        <p class="nota" id="avisoFisico" role="status" hidden></p>
+
+        <div id="blocoFisico" hidden>
+          <p class="subtitulo">Indicadores publicados pela B3</p>
+          <div class="tabela-rolagem inteira">
+            <table class="dxt-table">
+              <thead><tr><th>Indicador</th><th>Praça</th><th class="right">Valor</th><th class="right" id="thBase">Base</th><th class="right">Base %</th></tr></thead>
+              <tbody id="tbFisico"></tbody>
+            </table>
+          </div>
+          <p class="nota-linha">
+            Base = indicador do físico − ajuste do 1º vencimento. Negativa: o físico está abaixo do futuro.
+          </p>
+        </div>
+
+        <div id="blocoReferencia" hidden>
+          <p class="subtitulo" id="tituloReferencia">Referência no exterior</p>
+          <div class="tabela-rolagem inteira">
+            <table class="dxt-table">
+              <thead><tr id="cabReferencia"></tr></thead>
+              <tbody id="tbReferencia"></tbody>
+            </table>
+          </div>
+          <p class="nota-linha" id="notaReferencia"></p>
+        </div>
+      </div>
+
+      <!-- ================= PRAÇAS (CEPEA) ================= -->
+      <div class="dxt-card dxt-card-body span12">
+        <div class="row">
+          <strong>Praças · indicadores do CEPEA</strong>
+          <span class="status">Widget oficial do CEPEA</span>
+        </div>
+        <div class="dxt-controls" id="chipsCepea" role="group" aria-label="Grupo de indicadores do CEPEA" style="margin-top:14px"></div>
+        <div class="moldura-cepea"><iframe id="quadroCepea" title="Indicadores do CEPEA" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" loading="lazy" height="200"></iframe></div>
+        <p class="nota-linha">
+          Preços do mercado físico por praça, apurados pelo
+          <a href="https://www.cepea.org.br/" target="_blank" rel="noopener">CEPEA/ESALQ-USP</a> e mostrados pelo
+          widget que o próprio CEPEA oferece para sites. Os dados são do CEPEA, sob licença CC BY-NC 4.0,
+          e não entram nas exportações desta ferramenta.
+        </p>
+      </div>
+
+      <!-- ================= HISTÓRICO ================= -->
+      <div class="dxt-card dxt-card-body span12">
+        <div class="row">
+          <strong>Histórico do contrato</strong>
+          <span class="status" id="statusHist" role="status" aria-live="polite">—</span>
+        </div>
+        <div class="controles-hist">
+          <select id="histContrato" class="dxt-select" aria-label="Contrato do histórico"></select>
+          <div class="rng-group" id="grupoHist" role="group" aria-label="Período do histórico">
+            <button type="button" class="rng" data-n="5">5 pregões</button>
+            <button type="button" class="rng" data-n="10">10 pregões</button>
+            <button type="button" class="rng" data-n="21">21 pregões</button>
+          </div>
+          <button type="button" id="btnHist" class="dxt-btn dxt-btn--sm"><svg class="ic" aria-hidden="true"><use href="#ic-chart"/></svg>Carregar histórico</button>
+          <button type="button" id="btnHistCsv" class="dxt-btn dxt-btn--ghost dxt-btn--sm" disabled><svg class="ic" aria-hidden="true"><use href="#ic-download"/></svg>CSV</button>
+        </div>
+        <div class="stats" id="statsHist"></div>
+        <div class="area-grafico" id="areaHist" hidden>
+          <canvas id="chartHist" aria-label="Histórico do preço de ajuste" role="img"></canvas>
+        </div>
+        <p class="nota-linha">
+          Preço de ajuste do contrato até o pregão escolhido acima, com o indicador do físico quando a B3 o
+          publica. A série vai até 21 pregões, que é o que o Boletim Diário da B3 guarda.
+        </p>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="noscript">
+        Esta ferramenta busca os preços da B3 no navegador e precisa de JavaScript. Ative o JavaScript
+        para ver o pregão, a curva e o mercado físico.
+      </p>
+    </noscript>
+  </main>
+
+  <!-- ===================== Rodapé ===================== -->
+  <footer class="dxt-footer">
+    <div class="dxt-footer-inner">
+      <div class="dxt-footer-brand">
+        <a href="https://www.dexterityit.com.br" aria-label="Dexterity IT Solutions">
+          <svg class="dxt-logo" viewBox="0 0 445.4 100" role="img" aria-label="Dexterity IT Solutions"
+               style="--mk:var(--dxt-off);--acc:var(--dxt-cerceta)">
+            <g transform="scale(0.64475) translate(-206.8,-19)">
+                  <path fill="var(--mk)" d="M306.8,41.1c0,6.7-1.3,13.1-3.8,19.1s-6.1,11.4-10.8,16.1c-4.7,4.7-10.2,8.4-16.1,10.8c-6,2.5-12.4,3.8-19.1,3.8c-0.2,0-1.8,0-3.4,0c-1.1,0-2.2,0-2.8,0.1c-0.4,0-0.7-0.2-0.9-0.5l-21.6-35.4l-21-34.4c-0.4-0.6,0.1-1.5,0.8-1.5h48.5h49.2c0.5,0,1,0.4,1,1v10V41.1z"/>
+                  <path fill="var(--acc)" d="M318.4,40.7c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0,0.1,0,0.2,0,0.3c0.1,6.6,1.4,12.9,3.9,18.8c2.5,5.9,6.1,11.3,10.7,15.9c4.7,4.7,10.2,8.4,16.1,10.8c6,2.5,12.4,3.8,19.1,3.8h17.4h15.7c0.8,0,1.2-0.8,0.8-1.5l-10-16.4l-10.9-17.8c-6.8-11.2-14.9-20.2-24.5-26.4c-9.6-6.2-20.8-9.6-33.9-9.6h-3.4c-0.5,0-1,0.4-1,1V30V40.7z"/>
+                  <path fill="var(--mk)" d="M306.8,152.3c0-6.7-1.3-13.1-3.8-19.1s-6.1-11.4-10.8-16.1c-4.7-4.7-10.2-8.4-16.1-10.8c-6-2.5-12.4-3.8-19.1-3.8c-0.2,0-1.8,0-3.4,0c-1.1,0-2.2,0-2.8-0.1c-0.4,0-0.7,0.2-0.9,0.5l-21.6,35.4l-21,34.4c-0.4,0.6,0.1,1.5,0.8,1.5h48.5h49.2c0.5,0,1-0.4,1-1v-10V152.3z"/>
+                  <path fill="var(--mk)" d="M368.2,102.5c-6.7,0-13.1,1.3-19.1,3.8s-11.4,6.1-16.1,10.8c-4.7,4.7-8.3,10.1-10.8,16.1c-2.5,5.9-3.8,12.4-3.8,19c0,0,0,0.1,0,0.1s0,0.1,0,0.1c0,0,0,0,0,0c0,0,0,0,0,0v5.1v5.1v5.8v4.8c0,0.5,0.5,1,1,1c12.5-0.4,24.5-3.9,35-9.9c10.8-6.2,20.1-15.1,26.8-26.1l10.9-17.8l10-16.3c0.4-0.6-0.1-1.5-0.8-1.5h-15.7H368.2z"/>
+                </g>
+            <g transform="translate(152,17) scale(0.51123) translate(-17.5,-217.5)">
+                  <path fill="var(--mk)" d="M41.5,346.9h-23c-0.4,0-0.8-0.4-0.8-0.8V218.6c0-0.4,0.4-0.8,0.8-0.8h23c10.5,0,19.9,5.4,26.3,15.3c7.2,11,10.8,27.6,10.8,49.3c0,21.7-3.6,38.3-10.8,49.3C61.3,341.5,52,346.9,41.5,346.9zM33.9,330.7h7.6c13.1,0,21-18.1,21-48.4s-7.8-48.4-21-48.4h-7.6V330.7z"/>
+                  <path fill="var(--mk)" d="M141.3,233.2v-14.6c0-0.4-0.4-0.8-0.8-0.8H93.6c-0.4,0-0.8,0.4-0.8,0.8v55.6v16.2v55.6c0,0.4,0.4,0.8,0.8,0.8h46.9c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8H109v-40.2h26.4c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8H109V234h31.5C141,234,141.3,233.7,141.3,233.2z"/>
+                  <path fill="var(--mk)" d="M148.8,346.9h15.7c0.3,0,0.6-0.2,0.8-0.5l17-42.3l17,42.3c0.1,0.3,0.4,0.5,0.8,0.5h15.7c0.6,0,1-0.6,0.8-1.1L191,282.3l19.4-48.3h22.8v112c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V234H274c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-24.6h-16.2h-16.3H200c-0.3,0-0.6,0.2-0.8,0.5l-17,42.3l-17-42.3c-0.1-0.3-0.4-0.5-0.8-0.5h-15.7c-0.6,0-1,0.6-0.8,1.1l25.5,63.4l-25.5,63.4C147.9,346.3,148.3,346.9,148.8,346.9z"/>
+                  <path fill="var(--mk)" d="M332.7,233.2v-14.6c0-0.4-0.4-0.8-0.8-0.8H285c-0.4,0-0.8,0.4-0.8,0.8v55.6v16.2v55.6c0,0.4,0.4,0.8,0.8,0.8h46.9c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-31.5v-40.2h26.4c0.4,0,0.8-0.4,0.8-0.8v-14.6c0-0.4-0.4-0.8-0.8-0.8h-26.4V234h31.5C332.3,234,332.7,233.7,332.7,233.2z"/>
+                  <path fill="var(--mk)" d="M363.1,297.1v-16.2V234h4c13.9,0,21,7.9,21,23.4c0,12.8-4.7,20.3-14.3,22.7l-9,2.2l25.7,64c0.1,0.3,0.4,0.5,0.8,0.5H407c0.6,0,1-0.6,0.8-1.1l-21.4-53.3c11.5-6.3,18-18.6,18-35c0-29.2-19.2-39.6-37.1-39.6h-19.4c-0.4,0-0.8,0.4-0.8,0.8v62.2v16.2v49c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V297.1z"/>
+                  <path fill="var(--acc)" d="M434,346.9h-14.6c-0.4,0-0.8-0.4-0.8-0.8V218.7c0-0.4,0.4-0.8,0.8-0.8H434c0.4,0,0.8,0.4,0.8,0.8v127.4C434.8,346.5,434.4,346.9,434,346.9z"/>
+                  <path fill="var(--acc)" d="M485.9,217.9h-16.2h-17.1h-7.4c-0.4,0-0.8,0.4-0.8,0.8v14.6c0,0.4,0.4,0.8,0.8,0.8h24.5v112c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8V234h25.9c0.5,0,0.8-0.5,0.6-0.9l-6-14.9c-0.1-0.2-0.3-0.4-0.6-0.4H485.9z"/>
+                  <path fill="var(--mk)" d="M591,217.9h-15.7c-0.3,0-0.6,0.2-0.8,0.5L554.2,269l-20.3-50.6c-0.1-0.3-0.4-0.5-0.8-0.5h-6.5h-9.5c-0.5,0-0.8,0.5-0.6,0.9l6.2,15.3h0l23.4,58.2V346c0,0.4,0.4,0.8,0.8,0.8h14.6c0.4,0,0.8-0.4,0.8-0.8v-53.8l29.4-73.3C591.9,218.4,591.5,217.9,591,217.9z"/>
+                </g>
+          </svg>
+        </a>
+        <p>Consultoria SAP especializada em Tesouraria e Risco.</p>
+        <address>
+          Rua Visconde do Rio Branco, 1488 — Conj. 909<br />
+          Centro · Curitiba · PR<br />
+          CEP 80420-210
+        </address>
+      </div>
+
+      <div>
+        <h4 class="dxt-eyebrow dxt-eyebrow-muted">Ferramentas</h4>
+        <ul>
+          <li><a href="https://www.dexterityit.com.br/calculadora-mtm-ndf" data-ferramenta>Calculadora MTM NDF</a></li>
+          <li><a href="https://www.dexterityit.com.br/titulos-publicos" data-ferramenta>Títulos Públicos</a></li>
+          <li><a href="https://www.dexterityit.com.br/derivativos-listados-b3" data-ferramenta>Derivativos Listados B3</a></li>
+          <li><a href="https://www.dexterityit.com.br/indicadores-economicos" data-ferramenta>Indicadores Econômicos</a></li>
+          <li><a href="https://www.dexterityit.com.br/cotacao-de-moedas" data-ferramenta>Cotação de Moedas</a></li>
+          <li><a href="https://www.dexterityit.com.br/ibge" data-ferramenta>Séries IBGE</a></li>
+          <li><a href="https://www.dexterityit.com.br/commodities-agricolas" data-ferramenta aria-current="page">Commodities Agrícolas</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="dxt-eyebrow dxt-eyebrow-muted">Empresa</h4>
+        <ul>
+          <li><a href="https://www.dexterityit.com.br/solucoes">Soluções</a></li>
+          <li><a href="https://www.dexterityit.com.br/cursos">Cursos</a></li>
+          <li><a href="https://www.dexterityit.com.br/experiencia">Experiência</a></li>
+          <li><a href="https://www.dexterityit.com.br/contato">Falar com a gente</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dxt-footer-nota">
+      <div>
+        <p>
+          Os preços exibidos são obtidos automaticamente dos arquivos públicos da B3 (Pesquisa por Pregão e
+          Boletim Diário do Mercado) e, no quadro de praças, do widget do CEPEA/ESALQ-USP. Destinam-se
+          exclusivamente a fins de conferência e apoio operacional. A Dexterity IT Solutions não se
+          responsabiliza pela exatidão, atualidade ou completude dos dados apresentados, nem por decisões
+          tomadas com base neles. Confirme sempre os valores na publicação oficial da B3 e do CEPEA.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Moldura do site (iframe em ?embed=1): altura automática, diálogos e avisos. Antes do app. -->
+  <script src="assets/moldura.js"></script>
+
+<script type="module">
+  // Catálogo e cálculos: os mesmos módulos que as funções de /api usam
+  import { MERCADORIAS, GRUPOS_CEPEA, mercadoriaDe, grupoCepeaDe } from "./lib/mercadorias.js";
+  import {
+    base, dataValida, decomporReferencia, fimDeSemana, hojeEmSaoPaulo, inclinacao, montarCurva,
+    ordenarContratos, rotuloData, rotuloDataCurta, rotuloVencimento, somarDias, variacao
+  } from "./lib/calculos.js";
+
+  // ---- Parâmetros de URL ----
+  //   ?embed=1              modo incorporado (iframe no site ou no Notion): sem título nem rodapé
+  //   ?mercadoria=milho     abre direto na mercadoria (id do catálogo ou código da B3: boi, BGI, milho, CCM…)
+  //   ?data=2026-11-19      abre no pregão da data
+  //   ?comparar=semana      nenhum, anterior, semana ou mes
+  const PARAMS = new URLSearchParams(location.search);
+
+  // Moldura do site (assets/moldura.js). Se o arquivo não carregar, os avisos só não aparecem.
+  const Moldura = window.Moldura || { embutido: false, aviso(){} };
+
+  // localStorage pode lançar exceção em iframe de terceiros ou com bloqueio de dados do site
+  const armazenamento = {
+    ler(chave){ try { return localStorage.getItem(chave); } catch (e) { return null; } },
+    gravar(chave, valor){ try { localStorage.setItem(chave, valor); } catch (e) { /* segue sem lembrar */ } }
+  };
+
+  // Bibliotecas pesadas só descem quando são usadas (o SheetJS sozinho tem ~900 KB)
+  const LIBS = { XLSX: "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" };
+  const libsPendentes = {};
+  function carregarLib(nome){
+    if (window[nome]) return Promise.resolve(window[nome]);
+    if (!libsPendentes[nome]){
+      libsPendentes[nome] = new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = LIBS[nome];
+        s.async = true;
+        s.onload = () => window[nome] ? resolve(window[nome]) : reject(new Error(`${nome} indisponível`));
+        s.onerror = () => { delete libsPendentes[nome]; s.remove(); reject(new Error(`falha ao baixar ${nome}`)); };
+        document.head.appendChild(s);
+      });
+    }
+    return libsPendentes[nome];
+  }
+
+  const PRIMEIRA_DATA = "2022-01-03";
+  // Comparação da curva: pregões para trás no calendário da B3 (ou dias corridos, sem calendário)
+  const COMPARACOES = { nenhum: null, anterior: { pregoes: 1, dias: 1 }, semana: { pregoes: 5, dias: 7 }, mes: { pregoes: 20, dias: 28 } };
+  const HOJE = hojeEmSaoPaulo();
+
+  // ---- DOM ----
+  const $ = (id) => document.getElementById(id);
+  const form = $("form");
+  const chipsEl = $("chips");
+  const dataEl = $("data");
+  const btn = $("btn");
+  const btnAnterior = $("btnAnterior");
+  const btnProximo = $("btnProximo");
+  const btnCsv = $("btnCsv");
+  const btnXlsx = $("btnXlsx");
+  const statusEl = $("status");
+  const cabecalho = $("cabecalho");
+  const tbody = document.querySelector("#tbl tbody");
+  const histContrato = $("histContrato");
+  const btnHist = $("btnHist");
+  const btnHistCsv = $("btnHistCsv");
+
+  // ---- Estado ----
+  let mercadoria = MERCADORIAS[0];
+  let pregao = null;          // resposta de /api/pregao da data carregada
+  let comparado = null;       // pregão de comparação da curva
+  let dolarComparado = null;  // dólar da B3 no dia do pregão de comparação (para a curva em reais)
+  let indicadores = null;     // resposta de /api/indicadores da data carregada
+  let estadoIndicadores = "carregando"; // carregando | ok | fora (sem dados na data) | erro
+  let cadastro = {};          // /api/contratos: vencimento exato e dias úteis por contrato
+  let dataDoCadastro = null;  // data de referência dos dias úteis do cadastro
+  let pregoes = [];           // calendário recente (do mais novo para o mais antigo); vazio se a função falhar
+  let conjuntoPregoes = new Set();
+  let comparar = "anterior";
+  let emReais = false;
+  let sortKey = "vencimento";
+  let sortDir = "asc";
+  let grupoCepea = null;
+  let histN = 21;
+  let historico = null;       // { contrato, pontos: [{ data, ticker, ajuste, fisico }] }
+  let chartCurva, chartHist;
+  let carga = 0;              // descarta respostas antigas quando a pessoa troca de data rápido
+  let cargaHist = 0;
+
+  // ================= REDE =================
+
+  const cachePregao = new Map();      // data → Promise<resposta | null (sem pregão)>
+  const cacheIndicadores = new Map(); // data → Promise<resposta | null (sem dados)>
+
+  async function chamar(caminho){
+    const res = await fetch(caminho);
+    let corpo = null;
+    try { corpo = await res.json(); } catch (e) { /* corpo não é JSON */ }
+    return { ok: res.ok, status: res.status, corpo };
+  }
+
+  // 404 é resposta normal (fim de semana, feriado, fora da janela): vira null. O resto é erro.
+  function comCache(cache, caminho, campo){
+    return (data) => {
+      if (!cache.has(data)){
+        const p = (async () => {
+          const r = await chamar(`${caminho}?data=${data}`);
+          if (r.status === 404) return null;
+          if (!r.ok) throw new Error((r.corpo && r.corpo.erro) || `HTTP ${r.status}`);
+          if (!r.corpo || !Array.isArray(r.corpo[campo])) throw new Error("resposta inesperada da API");
+          return r.corpo;
+        })();
+        cache.set(data, p);
+        p.catch(() => cache.delete(data));
+      }
+      return cache.get(data);
+    };
+  }
+  const buscarPregao = comCache(cachePregao, "/api/pregao", "contratos");
+  const buscarIndicadores = comCache(cacheIndicadores, "/api/indicadores", "indicadores");
+
+  // Dentro do calendário conhecido só valem as datas que estão nele; fora dele, qualquer dia de semana.
+  function podeTerPregao(d){
+    if (d > HOJE || d < PRIMEIRA_DATA || fimDeSemana(d)) return false;
+    if (!pregoes.length || d < pregoes[pregoes.length - 1]) return true;
+    return conjuntoPregoes.has(d);
+  }
+
+  async function pregaoEmOuAntes(alvo, tentativas = 8){
+    let d = alvo;
+    for (let n = 0; n < tentativas && d >= PRIMEIRA_DATA; d = somarDias(d, -1)){
+      if (!podeTerPregao(d)) continue;
+      n++;
+      const p = await buscarPregao(d);
+      if (p) return p;
+    }
+    return null;
+  }
+  async function pregaoEmOuDepois(alvo, tentativas = 8){
+    let d = alvo;
+    for (let n = 0; n < tentativas && d <= HOJE; d = somarDias(d, 1)){
+      if (!podeTerPregao(d)) continue;
+      n++;
+      const p = await buscarPregao(d);
+      if (p) return p;
+    }
+    return null;
+  }
+
+  // ================= FORMATOS =================
+
+  function fmtNum(n, casas = 2, maximo = casas){
+    if (!Number.isFinite(n)) return "—";
+    return n.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: Math.max(casas, maximo) });
+  }
+  // Preço: duas casas, e até quatro quando a B3 publica assim (ajuste da soja em dólar)
+  const fmtPreco = (n) => fmtNum(n, 2, 4);
+  const fmtInt = (n) => Number.isFinite(n) ? n.toLocaleString("pt-BR") : "—";
+  const comSinal = (n, texto) => (Number.isFinite(n) && n > 0 ? "+" : "") + texto;
+  const fmtDif = (n) => comSinal(n, fmtPreco(n));
+  const fmtPct = (n) => Number.isFinite(n) ? comSinal(n, `${fmtNum(n, 2)}%`) : "—";
+  const seta = (n) => !Number.isFinite(n) ? "" : n > 0 ? "▲" : n < 0 ? "▼" : "▬";
+  const classeDir = (n) => !Number.isFinite(n) ? "" : n > 0 ? "dxt-badge--up" : n < 0 ? "dxt-badge--down" : "";
+  const classeCelula = (n) => !Number.isFinite(n) ? "right sem-valor" : n > 0 ? "right alta" : n < 0 ? "right baixa" : "right";
+
+  // Unidade do contrato: "R$/@" → ["R$", "@"]
+  const partesUnidade = (unidade) => { const i = unidade.indexOf("/"); return [unidade.slice(0, i), unidade.slice(i + 1)]; };
+  function fmtComUnidade(n, unidade){
+    if (!Number.isFinite(n)) return "—";
+    const [moeda, medida] = partesUnidade(unidade);
+    return `${moeda} ${fmtPreco(n)}/${medida}`;
+  }
+  // Dólar da B3 no dia; só converte contrato em dólar
+  const dolar = () => indicadores && Number.isFinite(indicadores.dolar) ? indicadores.dolar : null;
+  const converte = () => emReais && mercadoria.moeda === "USD" && dolar() !== null;
+  const fator = () => converte() ? dolar() : 1;
+  const unidadeAtual = () => converte() ? `R$/${partesUnidade(mercadoria.unidade)[1]}` : mercadoria.unidade;
+  // Preço na moeda escolhida: convertido para reais sai com duas casas; na moeda do contrato, como a B3 publica
+  const fmtValor = (n) => converte() ? fmtNum(n, 2) : fmtPreco(n);
+  const fmtValorDif = (n) => comSinal(n, fmtValor(n));
+  function fmtValorComUnidade(n){
+    if (!Number.isFinite(n)) return "—";
+    const [moeda, medida] = partesUnidade(unidadeAtual());
+    return `${moeda} ${fmtValor(n)}/${medida}`;
+  }
+
+  function setStatus(el, texto, erro = false){
+    el.textContent = "";
+    if (erro){
+      const s = document.createElement("span");
+      s.className = "erro";
+      s.textContent = texto;
+      el.appendChild(s);
+    } else {
+      el.textContent = texto;
+    }
+  }
+  function badge(texto, classe){
+    const b = document.createElement("span");
+    b.className = "dxt-badge" + (classe ? ` ${classe}` : "");
+    b.textContent = texto;
+    return b;
+  }
+  function badgeValor(rotulo, valor, classe){
+    const b = badge(`${rotulo}: `, classe);
+    const forte = document.createElement("b");
+    forte.textContent = valor;
+    b.appendChild(forte);
+    return b;
+  }
+  function celula(texto, classe){
+    const td = document.createElement("td");
+    if (classe) td.className = classe;
+    td.textContent = texto;
+    return td;
+  }
+
+  // ================= DADOS DA MERCADORIA =================
+
+  const contratosDe = (p, m = mercadoria) => p ? p.contratos.filter((c) => c.codigo === m.codigo) : [];
+  const curvaDe = (p, m = mercadoria) => montarCurva(contratosDe(p, m), cadastro);
+  const indicadoresDe = (m = mercadoria) => indicadores ? indicadores.indicadores.filter((i) => i.codigo === m.codigo) : [];
+  const valorIndicador = (simbolo, lista = indicadoresDe()) => { const i = lista.find((x) => x.simbolo === simbolo); return i ? i.valor : null; };
+  const fisicoPrincipal = (m = mercadoria) => m.fisico.find((f) => f.principal) || null;
+
+  // Preços de ajuste do contrato de referência no exterior, um por vencimento
+  function referenciasDe(m = mercadoria){
+    if (!m.referencia || !indicadores) return [];
+    const saida = [];
+    for (const i of indicadoresDe(m)){
+      const r = decomporReferencia(i.simbolo, indicadores.data);
+      if (r && r.prefixo === m.referencia.prefixo && r.tipo === "Ajuste") saida.push({ ...r, valor: i.valor });
+    }
+    return saida.sort((a, b) => a.vencimento < b.vencimento ? -1 : 1);
+  }
+
+  function vencimentoTexto(c){
+    const cad = cadastro[c.ticker];
+    return cad ? rotuloData(cad.vencimento) : rotuloVencimento(c.vencimento);
+  }
+
+  // ================= INDICADORES (KPIs) =================
+
+  function limparKpi(n, titulo){
+    $(`kpi${n}Titulo`).textContent = titulo;
+    $(`kpi${n}Valor`).textContent = "—";
+    $(`kpi${n}Pe`).replaceChildren();
+  }
+
+  function renderKpis(){
+    const m = mercadoria;
+    const curva = curvaDe(pregao);
+    const frente = curva[0] || null;
+
+    // 1 — primeiro vencimento
+    limparKpi(1, frente ? `1º vencimento · ${frente.ticker}` : "1º vencimento");
+    if (frente){
+      $("kpi1Valor").textContent = fmtValorComUnidade(frente.ajuste * fator());
+      const pe = $("kpi1Pe");
+      if (Number.isFinite(frente.variacao)){
+        pe.appendChild(badge(`${seta(frente.variacao)} ${fmtValorDif(frente.variacao * fator())} (${fmtPct(frente.variacao_pct)})`, classeDir(frente.variacao)));
+      }
+      pe.appendChild(badge(`Vence em ${vencimentoTexto(frente)}`));
+      if (Number.isFinite(frente.contratos_em_aberto)) pe.appendChild(badge(`${fmtInt(frente.contratos_em_aberto)} em aberto`));
+    }
+
+    // 2 — mercado físico (ou a referência no exterior, quando a B3 não publica físico)
+    const fis = fisicoPrincipal(m);
+    const refs = referenciasDe(m);
+    const semDados = estadoIndicadores === "fora" ? "A B3 só guarda os últimos 21 pregões"
+      : estadoIndicadores === "erro" ? "Indicadores indisponíveis agora"
+      : estadoIndicadores === "carregando" ? "Carregando…" : null;
+    if (fis){
+      limparKpi(2, `Mercado físico · ${fis.praca}`);
+      const v = valorIndicador(fis.simbolo);
+      const pe = $("kpi2Pe");
+      if (Number.isFinite(v)){
+        $("kpi2Valor").textContent = fmtValorComUnidade(v * fator());
+        if (frente){
+          const b = base(v, frente.ajuste);
+          pe.appendChild(badge(`Base ${fmtValorDif(b.abs * fator())} (${fmtPct(b.pct)})`, classeDir(b.abs)));
+          pe.appendChild(badge(`contra ${frente.ticker}`));
+        }
+      } else {
+        pe.appendChild(badge(semDados || "Sem indicador na data", "dxt-badge--info"));
+      }
+    } else if (m.referencia){
+      limparKpi(2, "Referência no exterior");
+      const pe = $("kpi2Pe");
+      const r = refs[0];
+      if (r){
+        $("kpi2Titulo").textContent = `Referência no exterior · ${r.codigo}`;
+        $("kpi2Valor").textContent = `${fmtPreco(r.valor)} ${m.referencia.unidade}`;
+        const naUnidade = m.referencia.paraUnidadeDoContrato(r.valor);
+        pe.appendChild(badge(`= ${fmtComUnidade(naUnidade, m.unidade)}`));
+        if (dolar() !== null) pe.appendChild(badge(`R$ ${fmtNum(naUnidade * dolar(), 2)}/${partesUnidade(m.unidade)[1]}`));
+        pe.appendChild(badge(rotuloVencimento(r.vencimento)));
+      } else {
+        pe.appendChild(badge(semDados || "Sem referência na data", "dxt-badge--info"));
+      }
+    } else {
+      limparKpi(2, "Mercado físico");
+      $("kpi2Pe").appendChild(badge("A B3 não publica indicador para este contrato", "dxt-badge--info"));
+    }
+
+    // 3 — inclinação da curva
+    const inc = inclinacao(curva);
+    limparKpi(3, curva.length ? `Curva · ${curva.length} ${curva.length === 1 ? "vencimento" : "vencimentos"}` : "Curva");
+    if (inc){
+      $("kpi3Valor").textContent = fmtPct(inc.pct);
+      const pe = $("kpi3Pe");
+      const nome = inc.sentido === "ascendente" ? "Ascendente (contango)" : inc.sentido === "descendente" ? "Descendente (backwardation)" : "Plana";
+      pe.appendChild(badge(nome, classeDir(inc.abs)));
+      pe.appendChild(badge(`${rotuloVencimento(inc.primeiro.vencimento)} → ${rotuloVencimento(inc.ultimo.vencimento)}`));
+    } else if (curva.length === 1){
+      $("kpi3Pe").appendChild(badge("Um só vencimento com ajuste", "dxt-badge--info"));
+    }
+  }
+
+  // ================= CURVA =================
+
+  // Tema escuro da marca: rótulos em mono, fios discretos, cantos retos.
+  const FONTE_MONO = "'IBM Plex Mono', ui-monospace, monospace";
+  const CERCETA = "#00B3AC", AMBAR = "#FFA436", OFF = "#F7F3E7";
+  const TICKS = { color: "#908C85", font: { family: FONTE_MONO, size: 10 } };
+  const GRADE = { color: "rgba(247,243,231,.06)" };
+  const BORDA = { color: "rgba(247,243,231,.13)" };
+  const DICA = {
+    backgroundColor: "#1B1B1B", borderColor: "rgba(247,243,231,.13)", borderWidth: 1,
+    titleColor: "#908C85", bodyColor: "#F7F3E7",
+    titleFont: { family: FONTE_MONO, size: 10 }, bodyFont: { family: FONTE_MONO, size: 12 }, cornerRadius: 0
+  };
+  const LEGENDA = {
+    display: true, position: "bottom", align: "start",
+    labels: { color: "#A49F98", boxWidth: 18, boxHeight: 2, font: { family: FONTE_MONO, size: 10 } }
+  };
+  const tickPreco = (v) => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+
+  function renderCurva(){
+    const m = mercadoria;
+    const f = fator();
+    const curva = curvaDe(pregao);
+    // Em reais, a curva de comparação usa o dólar do dia dela; sem esse dólar, fica de fora
+    const fComp = converte() ? dolarComparado : 1;
+    const curvaComp = comparar !== "nenhum" && comparado && fComp !== null ? curvaDe(comparado) : [];
+    const fis = fisicoPrincipal(m);
+    const vFis = fis ? valorIndicador(fis.simbolo) : null;
+
+    // Estatísticas
+    const stats = $("statsCurva");
+    stats.replaceChildren();
+    if (curva.length){
+      const inc = inclinacao(curva);
+      stats.appendChild(badgeValor("1º venc.", fmtValor(curva[0].ajuste * f)));
+      if (inc){
+        stats.appendChild(badgeValor("Último", fmtValor(inc.ultimo.ajuste * f)));
+        stats.appendChild(badgeValor("Diferença", `${fmtValorDif(inc.abs * f)} (${fmtPct(inc.pct)})`, classeDir(inc.abs)));
+      }
+      if (Number.isFinite(vFis)) stats.appendChild(badgeValor("Físico", fmtValor(vFis * f)));
+      if (m.moeda === "USD" && dolar() !== null) stats.appendChild(badgeValor("Dólar B3", fmtNum(dolar(), 4)));
+    }
+    $("notaCurva").textContent = curva.length
+      ? `Preço de ajuste de cada vencimento em ${unidadeAtual()}; no eixo, o mês do código do contrato.` +
+        (comparar !== "nenhum" ? (!comparado ? " Sem pregão de comparação disponível."
+          : curvaComp.length ? ` Linha tracejada: pregão de ${rotuloData(comparado.data)}${converte() ? `, pelo dólar daquele dia (${fmtNum(dolarComparado, 4)})` : ""}.`
+          : ` Sem o dólar de ${rotuloData(comparado.data)} para mostrar a comparação em reais.`) : "") +
+        (Number.isFinite(vFis) ? ` Ponto âmbar: ${fis.nome.toLowerCase()} · ${fis.praca}.` : "")
+      : "";
+
+    if (chartCurva){ chartCurva.destroy(); chartCurva = null; }
+    if (!window.Chart || !curva.length) return;
+
+    // Eixo: "Físico" (quando há indicador) e depois os vencimentos das duas curvas, em ordem
+    const vencimentos = [...new Set([...curva, ...curvaComp].map((c) => c.vencimento))].sort();
+    const temFisico = Number.isFinite(vFis);
+    const rotulos = [...(temFisico ? ["Físico"] : []), ...vencimentos.map(rotuloVencimento)];
+    const desloc = temFisico ? 1 : 0;
+    const serie = (pontos, fatorDaSerie) => {
+      const dados = new Array(rotulos.length).fill(null);
+      for (const c of pontos) dados[vencimentos.indexOf(c.vencimento) + desloc] = c.ajuste * fatorDaSerie;
+      return dados;
+    };
+    const tickers = (pontos) => {
+      const nomes = new Array(rotulos.length).fill("");
+      for (const c of pontos) nomes[vencimentos.indexOf(c.vencimento) + desloc] = c.ticker;
+      return nomes;
+    };
+
+    const datasets = [{
+      label: `Ajuste em ${rotuloData(pregao.data)}`, data: serie(curva, f), _tickers: tickers(curva),
+      borderColor: CERCETA, backgroundColor: CERCETA, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, tension: 0.15, spanGaps: true
+    }];
+    if (curvaComp.length){
+      datasets.push({
+        label: `Ajuste em ${rotuloData(comparado.data)}`, data: serie(curvaComp, fComp), _tickers: tickers(curvaComp),
+        borderColor: OFF, backgroundColor: OFF, borderWidth: 1.5, borderDash: [5, 4], pointRadius: 2, tension: 0.15, spanGaps: true
+      });
+    }
+    if (temFisico){
+      const dados = new Array(rotulos.length).fill(null);
+      dados[0] = vFis * f;
+      datasets.push({
+        label: `Físico · ${fis.praca}`, data: dados, _tickers: new Array(rotulos.length).fill(""),
+        borderColor: AMBAR, backgroundColor: AMBAR, showLine: false, pointRadius: 5, pointHoverRadius: 7, pointStyle: "rectRot"
+      });
+    }
+
+    chartCurva = new Chart($("chartCurva"), {
+      type: "line",
+      data: { labels: rotulos, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: LEGENDA,
+          tooltip: {
+            ...DICA,
+            filter: (item) => item.parsed.y !== null,
+            callbacks: {
+              label: (c) => {
+                const t = c.dataset._tickers[c.dataIndex];
+                return ` ${c.dataset.label}${t ? ` · ${t}` : ""}: ${fmtValor(c.parsed.y)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { ...TICKS, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 }, grid: { display: false }, border: BORDA },
+          y: { ticks: { ...TICKS, callback: tickPreco }, grid: GRADE, border: BORDA,
+               title: { display: true, text: unidadeAtual(), color: "#908C85", font: { family: FONTE_MONO, size: 10 } } }
+        }
+      }
+    });
+  }
+
+  // ================= TABELA DO PREGÃO =================
+
+  // Colunas da tabela e das exportações. `preco`: convertida para reais quando "Em R$" está ligado.
+  function colunas(completo = false){
+    const cols = [
+      { k: "ticker", t: "Contrato", tipo: "texto" },
+      { k: "vencimento", t: "Vencimento", tipo: "vencimento" },
+      { k: "abertura", t: "Abertura", tipo: "preco" },
+      { k: "minimo", t: "Mínimo", tipo: "preco" },
+      { k: "maximo", t: "Máximo", tipo: "preco" },
+      { k: "medio", t: "Médio", tipo: "preco" },
+      { k: "ultimo", t: "Último", tipo: "preco" },
+      { k: "ajuste", t: "Ajuste", tipo: "preco" },
+      { k: "variacao", t: "Var.", tipo: "dif" },
+      { k: "variacao_pct", t: "Var. %", tipo: "pct" },
+      { k: "contratos_em_aberto", t: "Em aberto", tipo: "inteiro" },
+      ...(completo ? [{ k: "variacao_em_aberto", t: "Var. em aberto", tipo: "inteiro" }] : []),
+      { k: "negocios", t: "Negócios", tipo: "inteiro" },
+      { k: "contratos_negociados", t: "Contratos", tipo: "inteiro" },
+      { k: "volume", t: "Volume", tipo: "inteiro" },
+      ...(completo ? [{ k: "ajuste_por_contrato", t: "Ajuste por contrato (R$)", tipo: "numero" }] : []),
+      { k: "diferenca_pct", t: "Dif. 1º venc.", tipo: "pct" }
+    ];
+    if (Object.keys(cadastro).length){
+      cols.push({ k: "dias_uteis", t: "Dias úteis", tipo: "inteiro" });
+      cols.push({ k: "taxa_aa", t: "Taxa implícita a.a.", tipo: "pct" });
+    }
+    return cols;
+  }
+
+  // Linhas do pregão da mercadoria, com a posição na curva e os dias úteis do cadastro
+  function linhasDoPregao(){
+    const curva = new Map(curvaDe(pregao).map((c) => [c.ticker, c]));
+    return contratosDe(pregao).map((c) => ({
+      ...c,
+      diferenca_pct: curva.get(c.ticker)?.diferenca_pct ?? null,
+      taxa_aa: curva.get(c.ticker)?.taxa_aa ?? null,
+      dias_uteis: cadastro[c.ticker]?.dias_uteis ?? null
+    }));
+  }
+
+  function linhasOrdenadas(){
+    const linhas = linhasDoPregao();
+    const dir = sortDir === "asc" ? 1 : -1;
+    return linhas.sort((a, b) => {
+      const x = a[sortKey], y = b[sortKey];
+      if (x === y) return a.vencimento < b.vencimento ? -1 : 1;
+      if (x === null || x === undefined) return 1;   // sem valor sempre no fim
+      if (y === null || y === undefined) return -1;
+      return (x < y ? -1 : 1) * dir;
+    });
+  }
+
+  function renderTabela(){
+    const cols = colunas();
+    const f = fator();
+    cabecalho.replaceChildren(...cols.map((c) => {
+      const th = document.createElement("th");
+      th.dataset.k = c.k;
+      if (c.tipo !== "texto" && c.tipo !== "vencimento") th.className = "right";
+      th.textContent = c.t;
+      if (sortKey === c.k){
+        const s = document.createElement("span");
+        s.className = "seta";
+        s.textContent = sortDir === "asc" ? " ▲" : " ▼";
+        th.appendChild(s);
+      }
+      th.setAttribute("aria-sort", sortKey === c.k ? (sortDir === "asc" ? "ascending" : "descending") : "none");
+      return th;
+    }));
+
+    const linhas = pregao ? linhasOrdenadas() : [];
+    const frag = document.createDocumentFragment();
+    for (const l of linhas){
+      const tr = document.createElement("tr");
+      for (const c of cols){
+        const x = l[c.k];
+        if (c.tipo === "texto") tr.appendChild(celula(x, "mono"));
+        else if (c.tipo === "vencimento") tr.appendChild(celula(vencimentoTexto(l)));
+        else if (c.tipo === "preco") tr.appendChild(celula(fmtValor(Number.isFinite(x) ? x * f : NaN), Number.isFinite(x) ? "right" : "right sem-valor"));
+        else if (c.tipo === "dif") tr.appendChild(celula(Number.isFinite(x) ? fmtValorDif(x * f) : "—", classeCelula(x)));
+        else if (c.tipo === "pct") tr.appendChild(celula(fmtPct(x), classeCelula(x)));
+        else tr.appendChild(celula(fmtInt(Number.isFinite(x) ? Math.round(x) : NaN), Number.isFinite(x) ? "right" : "right sem-valor"));
+      }
+      frag.appendChild(tr);
+    }
+    tbody.replaceChildren(frag);
+    $("vazio").hidden = !pregao || linhas.length > 0;
+    $("count").textContent = linhas.length ? `${linhas.length} ${linhas.length === 1 ? "contrato" : "contratos"} · ${unidadeAtual()}` : "—";
+    $("notaTabela").textContent = (pregao && pregao.origem === "arquivo"
+      ? "Pregão anterior aos 21 que o Boletim Diário guarda: os dados vêm do arquivo histórico da B3, sem volume nem contratos negociados, e a posição em aberto é a de antes do pregão. "
+      : "") + (Object.keys(cadastro).length
+      ? `Dias úteis até o vencimento contados a partir de ${rotuloData(dataDoCadastro)}, data do cadastro de contratos da B3. ` +
+        "Taxa implícita a.a. = (ajuste ÷ ajuste do 1º vencimento) elevado a 252 ÷ dias úteis entre os dois vencimentos, menos 1. Em commodity ela mistura juro, armazenagem e safra: serve para comparar vencimentos, não como taxa de juros."
+      : "");
+    btnCsv.disabled = btnXlsx.disabled = linhas.length === 0;
+  }
+
+  // ================= FÍSICO E REFERÊNCIAS =================
+
+  function renderFisico(){
+    const m = mercadoria;
+    const frente = curvaDe(pregao)[0] || null;
+    const lista = indicadoresDe(m);
+    const aviso = $("avisoFisico");
+    const blocoF = $("blocoFisico");
+    const blocoR = $("blocoReferencia");
+    blocoF.hidden = blocoR.hidden = true;
+    aviso.hidden = true;
+
+    if (estadoIndicadores !== "ok"){
+      setStatus($("statusFisico"), estadoIndicadores === "carregando" ? "Carregando…" : "—");
+      if (estadoIndicadores === "fora"){
+        aviso.textContent = `Sem indicadores em ${pregao ? rotuloData(pregao.data) : "—"}: a B3 só guarda os últimos 21 pregões no Boletim Diário. O pregão e a curva acima seguem disponíveis.`;
+        aviso.hidden = false;
+      } else if (estadoIndicadores === "erro"){
+        aviso.textContent = "Não foi possível obter os indicadores da B3 agora. O pregão e a curva acima seguem disponíveis; tente carregar de novo em instantes.";
+        aviso.hidden = false;
+      }
+      return;
+    }
+    setStatus($("statusFisico"), `B3 · ${rotuloData(indicadores.data)}${dolar() !== null ? ` · dólar ${fmtNum(dolar(), 4)}` : ""}`);
+
+    // --- Indicadores do físico: os do catálogo e, depois, qualquer outro que a B3 publique para o contrato
+    const conhecidos = new Set([...m.fisico.map((x) => x.simbolo), ...(m.ocultar || [])]);
+    const linhas = [];
+    for (const x of m.fisico){
+      const v = valorIndicador(x.simbolo, lista);
+      if (Number.isFinite(v)) linhas.push({ nome: x.nome, praca: x.praca, valor: v, unidade: x.unidade || m.unidade, semBase: !!x.semBase });
+    }
+    for (const i of lista){
+      if (conhecidos.has(i.simbolo) || decomporReferencia(i.simbolo, indicadores.data)) continue;
+      linhas.push({ nome: i.descricao || i.simbolo, praca: "—", valor: i.valor, unidade: null, semBase: true });
+    }
+    if (linhas.length){
+      $("thBase").textContent = frente ? `Base (${frente.ticker})` : "Base";
+      const frag = document.createDocumentFragment();
+      for (const l of linhas){
+        const tr = document.createElement("tr");
+        tr.appendChild(celula(l.nome, "quebra"));
+        tr.appendChild(celula(l.praca));
+        tr.appendChild(celula(l.unidade && l.unidade.includes("/") ? fmtComUnidade(l.valor, l.unidade) : `${fmtPreco(l.valor)}${l.unidade ? ` ${l.unidade}` : ""}`, "right"));
+        const b = !l.semBase && frente ? base(l.valor, frente.ajuste) : { abs: null, pct: null };
+        tr.appendChild(celula(Number.isFinite(b.abs) ? fmtDif(b.abs) : "—", classeCelula(b.abs)));
+        tr.appendChild(celula(fmtPct(b.pct), classeCelula(b.pct)));
+        frag.appendChild(tr);
+      }
+      $("tbFisico").replaceChildren(frag);
+      blocoF.hidden = false;
+    }
+
+    // --- Referência no exterior: ajuste por vencimento, convertido, ao lado do futuro da B3 do mesmo mês
+    const refs = referenciasDe(m);
+    if (refs.length){
+      const ref = m.referencia;
+      const mesmaUnidade = ref.unidade === m.unidade;
+      const medida = partesUnidade(m.unidade)[1];
+      const d = dolar();
+      const porVenc = new Map(contratosDe(pregao).map((c) => [c.vencimento, c]));
+      $("tituloReferencia").textContent = ref.nome;
+      const titulos = ["Código", "Vencimento", `Ajuste (${ref.unidade})`];
+      if (!mesmaUnidade) titulos.push(`Em ${m.unidade}`);
+      if (d !== null) titulos.push(`Em R$/${medida}`);
+      titulos.push("Futuro B3", `Ajuste B3 (${m.unidade})`, "B3 − referência");
+      $("cabReferencia").replaceChildren(...titulos.map((t, i) => {
+        const th = document.createElement("th");
+        if (i > 1 && t !== "Futuro B3") th.className = "right";
+        th.textContent = t;
+        return th;
+      }));
+      const frag = document.createDocumentFragment();
+      for (const r of refs){
+        const naUnidade = ref.paraUnidadeDoContrato(r.valor);
+        const b3 = porVenc.get(r.vencimento);
+        const tr = document.createElement("tr");
+        tr.appendChild(celula(r.codigo, "mono"));
+        tr.appendChild(celula(rotuloVencimento(r.vencimento)));
+        tr.appendChild(celula(fmtPreco(r.valor), "right"));
+        if (!mesmaUnidade) tr.appendChild(celula(fmtPreco(naUnidade), "right"));
+        if (d !== null) tr.appendChild(celula(fmtNum(naUnidade * d, 2), "right"));
+        tr.appendChild(celula(b3 ? b3.ticker : "—", b3 ? "mono" : "sem-valor"));
+        tr.appendChild(celula(b3 && Number.isFinite(b3.ajuste) ? fmtPreco(b3.ajuste) : "—", b3 ? "right" : "right sem-valor"));
+        const dif = b3 && Number.isFinite(b3.ajuste) ? b3.ajuste - naUnidade : null;
+        tr.appendChild(celula(Number.isFinite(dif) ? fmtDif(dif) : "—", classeCelula(dif)));
+        frag.appendChild(tr);
+      }
+      $("tbReferencia").replaceChildren(frag);
+      $("notaReferencia").textContent =
+        (m.codigo === "SJC" ? "Preço de ajuste do contrato de soja do CME Group que a B3 usa para liquidar o minicontrato. Um bushel de soja tem 60 libras (27,2155 kg); a saca, 60 kg." :
+         m.codigo === "ICF" ? "Preço de ajuste do contrato C de café arábica da ICE, em Nova York, publicado pela B3. Uma saca de 60 kg tem 132,277 libras. O contrato da B3 é de café tipo 4/5 com entrega no Brasil, por isso negocia com diferencial sobre a ICE." :
+         "Preço de ajuste de referência que a B3 publica para cada vencimento do contrato.") +
+        (d !== null ? ` Conversão para reais pelo dólar que a B3 divulga às 16h para liquidação em D+1 (${fmtNum(d, 4)}).` : "");
+      blocoR.hidden = false;
+    }
+
+    if (blocoF.hidden && blocoR.hidden){
+      aviso.textContent = `A B3 não publica indicador do mercado físico nem referência no exterior para o ${m.contrato}. Veja as praças do CEPEA logo abaixo.`;
+      aviso.hidden = false;
+    }
+  }
+
+  // ================= PRAÇAS (WIDGET DO CEPEA) =================
+
+  // O script do CEPEA escreve a tabela com document.write: roda dentro de um iframe isolado
+  // (sandbox sem allow-same-origin), que não alcança esta página. O quadro só avisa a própria altura.
+  window.addEventListener("message", (e) => {
+    const quadro = $("quadroCepea");
+    if (e.source !== quadro.contentWindow || !e.data || e.data.origem !== "quadro-cepea") return;
+    const altura = Number(e.data.altura);
+    if (Number.isFinite(altura) && altura >= 60 && altura <= 1600) quadro.height = Math.ceil(altura);
+  });
+  function renderCepea(){
+    const g = grupoCepeaDe(grupoCepea) || GRUPOS_CEPEA[0];
+    $("chipsCepea").replaceChildren(...GRUPOS_CEPEA.map((grupo) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "dxt-chip" + (grupo.id === g.id ? " is-active" : "");
+      b.setAttribute("aria-pressed", grupo.id === g.id ? "true" : "false");
+      b.textContent = grupo.nome;
+      b.addEventListener("click", () => { grupoCepea = grupo.id; renderCepea(); });
+      return b;
+    }));
+    const q = new URLSearchParams({ fonte: "verdana", tamanho: "10", largura: "100%", corfundo: "242424", cortexto: "F7F3E7", corlinha: "1F1F1F" });
+    for (const [id] of g.indicadores) q.append("id_indicador[]", String(id));
+    const quadro = $("quadroCepea");
+    const altura = 110 + g.indicadores.length * 34; // estimativa até o quadro avisar a altura real
+    if (quadro.dataset.grupo === g.id) return;
+    quadro.dataset.grupo = g.id;
+    quadro.height = altura;
+    quadro.srcdoc = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><base target="_blank">` +
+      `<style>html,body{margin:0;background:#242424;color:#F7F3E7;font:13px Verdana,sans-serif}a{color:#00B3AC}p{margin:12px;color:#A49F98}</style></head><body>` +
+      `<script src="https://www.cepea.org.br/br/widgetproduto.js.php?${q.toString()}"><\/script>` +
+      `<script>(function(){function avisar(){parent.postMessage({origem:"quadro-cepea",altura:document.documentElement.scrollHeight},"*")}` +
+      `avisar();addEventListener("load",avisar);setTimeout(avisar,1500)})()<\/script>` +
+      `<noscript><p>Indicadores do CEPEA indisponíveis sem JavaScript.</p></noscript></body></html>`;
+  }
+
+  // ================= HISTÓRICO =================
+
+  function prepararHistorico(){
+    const anterior = histContrato.value;
+    const contratos = ordenarContratos(contratosDe(pregao));
+    const opcoes = [["@1", "1º vencimento (contínuo)"], ...contratos.map((c) => [c.ticker, `${c.ticker} · ${rotuloVencimento(c.vencimento)}`])];
+    histContrato.replaceChildren(...opcoes.map(([valor, texto]) => {
+      const o = document.createElement("option");
+      o.value = valor;
+      o.textContent = texto;
+      return o;
+    }));
+    histContrato.value = opcoes.some(([v]) => v === anterior) ? anterior : (contratos[0] ? contratos[0].ticker : "@1");
+  }
+
+  function limparHistorico(){
+    cargaHist++;
+    historico = null;
+    if (chartHist){ chartHist.destroy(); chartHist = null; }
+    $("areaHist").hidden = true;
+    $("statsHist").replaceChildren();
+    btnHistCsv.disabled = true;
+    btnHist.disabled = !pregao;
+    setStatus($("statusHist"), "—");
+  }
+
+  const LETRAS = "FGHJKMNQUVXZ"; // letra do mês no código do contrato, de janeiro a dezembro
+  // "BGIZ26" → "2612": ordena os contratos de uma mercadoria por vencimento
+  const ordemDoVencimento = (ticker) => ticker.slice(4) + String(LETRAS.indexOf(ticker[3]) + 1).padStart(2, "0");
+
+  // Contratos pedidos à função: o escolhido, ou — no 1º vencimento contínuo — todos os do pregão
+  // mais os dos dois meses anteriores ao primeiro, que já venceram mas eram a frente da curva antes.
+  function contratosDoHistorico(escolhido){
+    if (escolhido !== "@1") return [escolhido];
+    const atuais = ordenarContratos(contratosDe(pregao)).filter((c) => Number.isFinite(c.ajuste));
+    const tickers = atuais.map((c) => c.ticker);
+    if (atuais.length){
+      let [ano, mes] = atuais[0].vencimento.split("-").map(Number);
+      for (let n = 0; n < 2; n++){
+        mes--; if (mes < 1){ mes = 12; ano--; }
+        tickers.push(`${mercadoria.codigo}${LETRAS[mes - 1]}${String(ano).slice(2)}`);
+      }
+    }
+    return tickers.slice(0, 24);
+  }
+
+  async function carregarHistorico(){
+    if (!pregao) return;
+    const minha = ++cargaHist;
+    const m = mercadoria;
+    const escolhido = histContrato.value;
+    const fis = fisicoPrincipal(m);
+    btnHist.disabled = true;
+    btnHistCsv.disabled = true;
+    setStatus($("statusHist"), "Carregando o histórico…");
+
+    let corpo;
+    try {
+      const q = new URLSearchParams({ contratos: contratosDoHistorico(escolhido).join(","), ate: pregao.data });
+      if (fis) q.set("codigo", m.codigo);
+      const r = await chamar(`/api/historico?${q}`);
+      if (!r.ok) throw new Error((r.corpo && r.corpo.erro) || `HTTP ${r.status}`);
+      if (!r.corpo || !r.corpo.contratos) throw new Error("resposta inesperada da API");
+      corpo = r.corpo;
+    } catch (e) {
+      if (minha !== cargaHist) return;
+      btnHist.disabled = false;
+      return setStatus($("statusHist"), `Não foi possível carregar o histórico: ${e.message}`, true);
+    }
+    if (minha !== cargaHist) return;
+
+    // Por data, o contrato escolhido — ou, no contínuo, o de vencimento mais próximo com ajuste
+    const porData = new Map();
+    for (const [ticker, serie] of Object.entries(corpo.contratos)){
+      for (const ponto of serie){
+        const atual = porData.get(ponto.data);
+        if (!atual || ordemDoVencimento(ticker) < ordemDoVencimento(atual.ticker)){
+          porData.set(ponto.data, { ticker, ajuste: ponto.ajuste });
+        }
+      }
+    }
+    const fisicos = new Map();
+    if (fis) for (const i of corpo.indicadores || []) if (i.simbolo === fis.simbolo) fisicos.set(i.data, i.valor);
+    const todos = [...porData.keys()].sort().map((data) => ({
+      data, ticker: porData.get(data).ticker, ajuste: porData.get(data).ajuste,
+      fisico: fisicos.has(data) ? fisicos.get(data) : null
+    }));
+
+    historico = { mercadoria: m, contrato: escolhido, todos, pontos: [] };
+    btnHist.disabled = false;
+    renderHistoricoNoPeriodo();
+  }
+
+  // Trocar de 5 para 10 ou 21 pregões não vai à rede: a série inteira já veio
+  function renderHistoricoNoPeriodo(){
+    const pontos = historico.pontos = historico.todos.slice(-histN);
+    renderHistorico();
+    if (!pontos.length){
+      setStatus($("statusHist"), pregao && pregao.origem === "arquivo"
+        ? "Sem histórico para esta data: a B3 só guarda os últimos 21 pregões."
+        : "Sem preço de ajuste deste contrato nos últimos 21 pregões.", true);
+    } else {
+      setStatus($("statusHist"), `${pontos.length} ${pontos.length === 1 ? "pregão" : "pregões"} · ${rotuloData(pontos[0].data)} a ${rotuloData(pontos[pontos.length - 1].data)}`);
+    }
+  }
+
+  function renderHistorico(){
+    const stats = $("statsHist");
+    stats.replaceChildren();
+    if (chartHist){ chartHist.destroy(); chartHist = null; }
+    const pontos = historico ? historico.pontos : [];
+    $("areaHist").hidden = pontos.length === 0;
+    btnHistCsv.disabled = pontos.length === 0;
+    if (!pontos.length) return;
+
+    const m = historico.mercadoria;
+    const valores = pontos.map((p) => p.ajuste);
+    const v = variacao(valores[valores.length - 1], valores[0]);
+    stats.appendChild(badgeValor("Mín", fmtPreco(Math.min(...valores))));
+    stats.appendChild(badgeValor("Máx", fmtPreco(Math.max(...valores))));
+    stats.appendChild(badgeValor("Média", fmtNum(valores.reduce((a, b) => a + b, 0) / valores.length, 2)));
+    stats.appendChild(badgeValor("Variação no período", `${fmtDif(v.abs)} (${fmtPct(v.pct)})`, classeDir(v.abs)));
+    if (!window.Chart) return;
+
+    const nome = historico.contrato === "@1" ? "1º vencimento" : historico.contrato;
+    const datasets = [{
+      label: `Ajuste · ${nome}`, data: valores,
+      borderColor: CERCETA, backgroundColor: "rgba(0,179,172,.12)", fill: true, borderWidth: 2,
+      pointRadius: pontos.length > 40 ? 0 : 2, tension: 0.15, spanGaps: true
+    }];
+    const fis = fisicoPrincipal(m);
+    if (fis && pontos.some((p) => Number.isFinite(p.fisico))){
+      datasets.push({
+        label: `Físico · ${fis.praca}`, data: pontos.map((p) => p.fisico),
+        borderColor: AMBAR, backgroundColor: AMBAR, borderWidth: 1.5, pointRadius: 2, tension: 0.15, spanGaps: false
+      });
+    }
+    chartHist = new Chart($("chartHist"), {
+      type: "line",
+      data: { labels: pontos.map((p) => rotuloDataCurta(p.data)), datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: LEGENDA,
+          tooltip: {
+            ...DICA,
+            filter: (item) => item.parsed.y !== null,
+            callbacks: {
+              title: (itens) => itens.length ? `${rotuloData(pontos[itens[0].dataIndex].data)} · ${pontos[itens[0].dataIndex].ticker}` : "",
+              label: (c) => ` ${c.dataset.label}: ${fmtPreco(c.parsed.y)}`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { ...TICKS, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { display: false }, border: BORDA },
+          y: { ticks: { ...TICKS, callback: tickPreco }, grid: GRADE, border: BORDA,
+               title: { display: true, text: m.unidade, color: "#908C85", font: { family: FONTE_MONO, size: 10 } } }
+        }
+      }
+    });
+  }
+
+  // ================= MERCADORIA, DATA E CARGA =================
+
+  function renderChips(){
+    chipsEl.replaceChildren(...MERCADORIAS.map((m) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "dxt-chip" + (m.id === mercadoria.id ? " is-active" : "");
+      b.setAttribute("aria-pressed", m.id === mercadoria.id ? "true" : "false");
+      b.title = `${m.contrato} (${m.codigo})`;
+      b.textContent = m.nome;
+      b.addEventListener("click", () => {
+        if (m.id === mercadoria.id) return;
+        mercadoria = m;
+        grupoCepea = m.cepea;
+        armazenamento.gravar("agro_mercadoria", m.id);
+        sortKey = "vencimento"; sortDir = "asc";
+        renderChips();
+        limparHistorico();
+        renderTudo();
+        prepararHistorico();
+      });
+      return b;
+    }));
+  }
+
+  function renderInfo(){
+    const m = mercadoria;
+    const el = $("info");
+    el.textContent = "";
+    const partes = [
+      ["b", `${m.contrato} (${m.codigo})`],
+      ["", ` · contrato de ${m.tamanhoTexto} · cotação em ${m.unidade} · liquidação: ${m.liquidacao.toLowerCase()}. Fonte: `],
+      ["a", "B3 — Boletim Diário do Mercado", "https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/boletim-diario/boletim-diario-do-mercado/"],
+      ["", " e, para pregões com mais de 21 dias úteis, o arquivo da Pesquisa por Pregão."]
+    ];
+    for (const [tag, texto, href] of partes){
+      if (!tag){ el.appendChild(document.createTextNode(texto)); continue; }
+      const n = document.createElement(tag);
+      n.textContent = texto;
+      if (href){ n.href = href; n.target = "_blank"; n.rel = "noopener"; }
+      el.appendChild(n);
+    }
+  }
+
+  function marcar(grupo, atributo, valor){
+    document.querySelectorAll(`#${grupo} .rng`).forEach((b) => {
+      const ativo = b.dataset[atributo] === String(valor);
+      b.classList.toggle("active", ativo);
+      b.setAttribute("aria-pressed", ativo ? "true" : "false");
+    });
+  }
+
+  function renderMoeda(){
+    const grupo = $("grupoMoeda");
+    const pode = mercadoria.moeda === "USD";
+    grupo.hidden = !pode;
+    grupo.querySelector('[data-moeda="brl"]').disabled = dolar() === null;
+    marcar("grupoMoeda", "moeda", converte() ? "brl" : "original");
+  }
+
+  function renderTudo(){
+    renderInfo();
+    renderMoeda();
+    renderKpis();
+    renderCurva();
+    renderTabela();
+    renderFisico();
+    renderCepea();
+  }
+
+  let cargaComparacao = 0;
+  async function carregarComparacao(minha){
+    const esta = ++cargaComparacao;
+    comparado = null;
+    dolarComparado = null;
+    const passo = COMPARACOES[comparar];
+    if (!passo || !pregao) return;
+    // No calendário conhecido a conta é em pregões; fora dele, em dias corridos
+    const i = pregoes.indexOf(pregao.data);
+    const alvo = i >= 0 && i + passo.pregoes < pregoes.length ? pregoes[i + passo.pregoes] : somarDias(pregao.data, -passo.dias);
+    try {
+      const p = await pregaoEmOuAntes(alvo);
+      if (minha !== carga || esta !== cargaComparacao) return;
+      comparado = p;
+      if (p){
+        renderCurva(); // já mostra a comparação na moeda do contrato enquanto o dólar daquele dia chega
+        const ind = await buscarIndicadores(p.data).catch(() => null);
+        if (minha !== carga || esta !== cargaComparacao) return;
+        dolarComparado = ind && Number.isFinite(ind.dolar) ? ind.dolar : null;
+      }
+    } catch (e) { /* a curva segue sem a comparação */ }
+    if (minha === carga && esta === cargaComparacao) renderCurva();
+  }
+
+  function falha(mensagem){
+    setStatus(statusEl, mensagem, true);
+    btn.disabled = false;
+  }
+
+  async function carregar(data){
+    const minha = ++carga;
+    btn.disabled = true;
+    // Fora do calendário recente o pregão vem do arquivo histórico da B3, que é lento
+    const antigo = pregoes.length ? data < pregoes[pregoes.length - 1] : false;
+    setStatus(statusEl, `Carregando o pregão de ${rotuloData(data)}…` + (antigo ? " arquivo histórico da B3, pode levar até um minuto" : ""));
+    let p;
+    try {
+      p = await buscarPregao(data);
+    } catch (e) {
+      if (minha === carga) falha(`Não foi possível carregar: ${e.message}`);
+      return;
+    }
+    if (minha !== carga) return;
+    if (!p) return falha(`Sem pregão em ${rotuloData(data)}: fim de semana, feriado ou arquivo ainda não publicado. Use as setas para ir ao pregão mais próximo.`);
+    mostrar(p, minha);
+  }
+
+  function mostrar(p, minha = ++carga){
+    pregao = p;
+    comparado = null;
+    indicadores = null;
+    estadoIndicadores = "carregando";
+    dataEl.value = p.data;
+    btn.disabled = false;
+    btnAnterior.disabled = p.data <= PRIMEIRA_DATA;
+    btnProximo.disabled = p.data >= HOJE;
+    setStatus(statusEl, `Pregão de ${rotuloData(p.data)} · ${p.fonte}`);
+    limparHistorico();
+    renderTudo();
+    prepararHistorico();
+
+    buscarIndicadores(p.data)
+      .then((i) => { if (minha !== carga) return; indicadores = i; estadoIndicadores = i ? "ok" : "fora"; })
+      .catch(() => { if (minha === carga) estadoIndicadores = "erro"; })
+      .finally(() => { if (minha === carga) renderTudo(); });
+    carregarComparacao(minha);
+  }
+
+  async function passo(direcao){
+    if (!pregao) return;
+    const minha = ++carga;
+    btnAnterior.disabled = btnProximo.disabled = true;
+    setStatus(statusEl, direcao < 0 ? "Procurando o pregão anterior…" : "Procurando o pregão seguinte…");
+    let p = null;
+    try {
+      p = direcao < 0 ? await pregaoEmOuAntes(somarDias(pregao.data, -1)) : await pregaoEmOuDepois(somarDias(pregao.data, 1));
+    } catch (e) {
+      if (minha === carga){ falha(`Não foi possível carregar: ${e.message}`); btnAnterior.disabled = btnProximo.disabled = false; }
+      return;
+    }
+    if (minha !== carga) return;
+    if (!p){
+      setStatus(statusEl, direcao < 0 ? "Não há pregão anterior disponível." : "Este é o pregão mais recente publicado pela B3.");
+      btnAnterior.disabled = pregao.data <= PRIMEIRA_DATA;
+      btnProximo.disabled = direcao > 0;
+      return;
+    }
+    mostrar(p, minha);
+  }
+
+  // ================= EXPORTAR =================
+
+  // Número com vírgula decimal, sem separador de milhar e sem notação científica
+  const numCsv = (x) => Number.isFinite(x) ? x.toLocaleString("pt-BR", { useGrouping: false, maximumFractionDigits: 10 }) : "";
+  const escCsv = (t) => /[;"\n]/.test(String(t)) ? `"${String(t).replace(/"/g, '""')}"` : String(t);
+  // BOM: o Excel em português abre os acentos certos
+  const csv = (linhas) => "﻿" + linhas.map((l) => l.map(escCsv).join(";")).join("\r\n");
+
+  function downloadBlob(conteudo, nome, mime){
+    const blob = new Blob([conteudo], { type: mime });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // Exportação do pregão: sempre na moeda do contrato (o dólar do dia vai numa coluna à parte)
+  function matrizDoPregao(paraCsv){
+    const m = mercadoria;
+    const n = paraCsv ? numCsv : (x) => Number.isFinite(x) ? x : null;
+    const cols = colunas(true);
+    const cabec = ["Data do pregão", "Mercadoria", ...cols.map((c) => c.tipo === "preco" || c.tipo === "dif" ? `${c.t} (${m.unidade})` : c.t), "Vencimento exato", "Moeda", "Dólar B3"];
+    const d = dolar();
+    const linhas = linhasOrdenadas().map((l) => [
+      pregao.data, m.nome,
+      ...cols.map((c) => c.tipo === "texto" ? l[c.k] : c.tipo === "vencimento" ? rotuloVencimento(l.vencimento) : n(l[c.k])),
+      cadastro[l.ticker]?.vencimento ?? "", l.moeda ?? m.moeda, m.moeda === "USD" ? n(d) : (paraCsv ? "" : null)
+    ]);
+    return [cabec, ...linhas];
+  }
+
+  function matrizDoFisico(){
+    const m = mercadoria;
+    const linhas = [["Data", "Mercadoria", "Símbolo B3", "Indicador", "Valor"]];
+    if (!indicadores) return linhas;
+    for (const i of indicadoresDe(m)) linhas.push([indicadores.data, m.nome, i.simbolo, i.descricao, i.valor]);
+    if (m.moeda === "USD" && dolar() !== null) linhas.push([indicadores.data, m.nome, "RTDOLD1", "Dólar B3 (liquidação D+1, 16h)", dolar()]);
+    return linhas;
+  }
+
+  const nomeArquivo = (ext) => `commodities_${mercadoria.id}_${pregao.data}.${ext}`;
+
+  btnCsv.addEventListener("click", () => {
+    const matriz = matrizDoPregao(true);
+    const nome = nomeArquivo("csv");
+    downloadBlob(csv(matriz), nome, "text/csv;charset=utf-8");
+    Moldura.aviso(`CSV gerado · ${matriz.length - 1} linhas · ${nome}`);
+  });
+
+  btnXlsx.addEventListener("click", async () => {
+    const matriz = matrizDoPregao(false);
+    const fisico = matrizDoFisico();
+    btnXlsx.disabled = true;
+    try {
+      const XLSX = await carregarLib("XLSX");
+      const wb = XLSX.utils.book_new();
+      const largura = (aoa) => aoa[0].map((t) => ({ width: Math.max(12, Math.min(44, String(t).length + 2)) }));
+      const ws = XLSX.utils.aoa_to_sheet(matriz);
+      ws["!cols"] = largura(matriz);
+      XLSX.utils.book_append_sheet(wb, ws, "Pregão");
+      if (fisico.length > 1){
+        const ws2 = XLSX.utils.aoa_to_sheet(fisico);
+        ws2["!cols"] = [{ width: 12 }, { width: 18 }, { width: 18 }, { width: 60 }, { width: 14 }];
+        XLSX.utils.book_append_sheet(wb, ws2, "Físico e referências");
+      }
+      const nome = nomeArquivo("xlsx");
+      XLSX.writeFile(wb, nome);
+      Moldura.aviso(`Excel gerado · ${matriz.length - 1} linhas · ${nome}`);
+    } catch (err) {
+      setStatus(statusEl, `Não foi possível gerar o Excel (${err.message}). Tente de novo.`, true);
+      Moldura.aviso(`Não foi possível gerar o Excel (${err.message}).`, true);
+    } finally {
+      btnXlsx.disabled = false;
+    }
+  });
+
+  btnHistCsv.addEventListener("click", () => {
+    if (!historico || !historico.pontos.length) return;
+    const m = historico.mercadoria;
+    const temFisico = historico.pontos.some((p) => Number.isFinite(p.fisico));
+    const matriz = [["Data do pregão", "Mercadoria", "Contrato", `Ajuste (${m.unidade})`, ...(temFisico ? [`Físico (${m.unidade})`] : [])]];
+    for (const p of historico.pontos) matriz.push([p.data, m.nome, p.ticker, numCsv(p.ajuste), ...(temFisico ? [numCsv(p.fisico)] : [])]);
+    const sufixo = historico.contrato === "@1" ? "1o-vencimento" : historico.contrato;
+    const nome = `commodities_${m.id}_${sufixo}_${historico.pontos[0].data}_${historico.pontos[historico.pontos.length - 1].data}.csv`;
+    downloadBlob(csv(matriz), nome, "text/csv;charset=utf-8");
+    Moldura.aviso(`CSV gerado · ${matriz.length - 1} linhas · ${nome}`);
+  });
+
+  // ================= EVENTOS =================
+
+  cabecalho.addEventListener("click", (e) => {
+    const th = e.target.closest("th");
+    if (!th) return;
+    const k = th.dataset.k;
+    if (sortKey === k) sortDir = sortDir === "asc" ? "desc" : "asc";
+    else { sortKey = k; sortDir = k === "ticker" || k === "vencimento" ? "asc" : "desc"; }
+    renderTabela();
+  });
+
+  document.querySelectorAll("#grupoComparar .rng").forEach((b) => b.addEventListener("click", () => {
+    comparar = b.dataset.comparar;
+    armazenamento.gravar("agro_comparar", comparar);
+    marcar("grupoComparar", "comparar", comparar);
+    comparado = null;
+    renderCurva();
+    carregarComparacao(carga);
+  }));
+
+  document.querySelectorAll("#grupoMoeda .rng").forEach((b) => b.addEventListener("click", () => {
+    emReais = b.dataset.moeda === "brl";
+    armazenamento.gravar("agro_moeda", emReais ? "brl" : "original");
+    renderMoeda(); renderKpis(); renderCurva(); renderTabela();
+  }));
+
+  document.querySelectorAll("#grupoHist .rng").forEach((b) => b.addEventListener("click", () => {
+    histN = Number(b.dataset.n);
+    marcar("grupoHist", "n", histN);
+    if (historico) renderHistoricoNoPeriodo();
+  }));
+  histContrato.addEventListener("change", () => { if (historico) carregarHistorico(); });
+  btnHist.addEventListener("click", carregarHistorico);
+
+  btnAnterior.addEventListener("click", () => passo(-1));
+  btnProximo.addEventListener("click", () => passo(1));
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const d = dataEl.value;
+    if (!dataValida(d)) return falha("Escolha a data do pregão.");
+    if (d > HOJE) return falha("Essa data ainda não aconteceu.");
+    if (d < PRIMEIRA_DATA) return falha(`A B3 só publica este arquivo de ${rotuloData(PRIMEIRA_DATA)} em diante.`);
+    carregar(d);
+  });
+
+  // ================= INÍCIO =================
+
+  mercadoria = mercadoriaDe(PARAMS.get("mercadoria")) || mercadoriaDe(armazenamento.ler("agro_mercadoria")) || MERCADORIAS[0];
+  grupoCepea = mercadoria.cepea;
+  const compararParam = String(PARAMS.get("comparar") || "").toLowerCase();
+  const compararSalvo = armazenamento.ler("agro_comparar") || "";
+  comparar = Object.hasOwn(COMPARACOES, compararParam) ? compararParam : Object.hasOwn(COMPARACOES, compararSalvo) ? compararSalvo : "anterior";
+  emReais = armazenamento.ler("agro_moeda") === "brl";
+  dataEl.max = HOJE;
+  marcar("grupoComparar", "comparar", comparar);
+  marcar("grupoHist", "n", histN);
+  renderChips();
+  renderTudo();
+  btnHist.disabled = true;
+
+  // Vencimento exato e dias úteis: complemento — a página funciona sem ele
+  chamar("/api/contratos")
+    .then((r) => { if (r.ok && r.corpo && r.corpo.contratos){ cadastro = r.corpo.contratos; dataDoCadastro = r.corpo.data; if (pregao){ renderKpis(); renderTabela(); } } })
+    .catch(() => { /* segue com o mês do código do contrato */ });
+
+  (async function iniciar(){
+    setStatus(statusEl, "Procurando o último pregão…");
+    try {
+      const r = await chamar("/api/pregoes");
+      if (r.ok && r.corpo && Array.isArray(r.corpo.datas)){ pregoes = r.corpo.datas; conjuntoPregoes = new Set(pregoes); }
+    } catch (e) { /* sem calendário: tenta os dias de semana */ }
+
+    const pedida = PARAMS.get("data");
+    if (dataValida(pedida) && pedida <= HOJE && pedida >= PRIMEIRA_DATA) return carregar(pedida);
+
+    // O arquivo do dia só sai depois do fechamento: antes das 19h (São Paulo) nem tenta hoje
+    const hora = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false }).format(new Date()));
+    const minha = ++carga;
+    try {
+      const p = await pregaoEmOuAntes(hora < 19 ? somarDias(HOJE, -1) : HOJE);
+      if (minha !== carga) return;
+      if (!p) return falha("Não foi possível achar um pregão recente na B3. Escolha uma data e clique em Carregar.");
+      mostrar(p, minha);
+    } catch (e) {
+      if (minha === carga) falha(`Não foi possível carregar: ${e.message}`);
+    }
+  })();
+</script>
+</body>
+</html>

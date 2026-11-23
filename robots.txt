@@ -1,0 +1,7 @@
+# Cotação de Commodities Agrícolas — Dexterity IT Solutions
+# O endereço canônico da ferramenta é https://www.dexterityit.com.br/commodities-agricolas
+# (ver <link rel="canonical"> no index.html). As funções em /api/ leem os arquivos públicos
+# da B3 e não têm conteúdo para indexar.
+User-agent: *
+Allow: /
+Disallow: /api/

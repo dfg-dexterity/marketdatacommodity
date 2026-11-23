@@ -1,0 +1,80 @@
+{
+  "slug": "commodities-agricolas",
+  "app": "https://cotacao-commodities.vercel.app",
+  "categoria": "Commodities",
+  "titulo": "Cotação de Commodities Agrícolas",
+  "tituloSEO": "Cotação de commodities agrícolas: boi, milho, soja e café na B3",
+  "metaDescricao": "Boi gordo, milho, soja, café e etanol na B3: preços do pregão, curva de vencimentos, base contra o mercado físico, praças do CEPEA e histórico, com Excel e CSV.",
+  "lead": "Consulte os futuros agrícolas da B3 — boi gordo, milho, soja, café arábica, café conilon e etanol hidratado — com os preços de cada pregão, a curva de vencimentos, o indicador do mercado físico e a base contra o futuro. Veja também as praças apuradas pelo CEPEA e leve tudo para o Excel.",
+  "nota": "A ferramenta roda no seu navegador, sem cadastro. Os preços vêm dos arquivos públicos da B3, consultados a cada acesso, e do widget do CEPEA; servem para conferência: confirme sempre na publicação oficial.",
+  "secoes": [
+    {
+      "titulo": "O que a ferramenta mostra",
+      "paragrafos": [
+        "Sete contratos futuros do agronegócio negociados na B3: boi gordo (BGI), milho (CCM), soja do CME Group (SJC), soja FOB Santos (SOY), café arábica 4/5 (ICF), café conilon (CNL) e etanol hidratado (ETH). Para cada um, a tabela do pregão traz abertura, mínimo, máximo, médio, último negócio, preço de ajuste e a variação contra o ajuste anterior, além dos contratos em aberto, do número de negócios, dos contratos negociados e do volume, vencimento por vencimento.",
+        "Três indicadores resumem o dia: o primeiro vencimento, com a variação e a posição em aberto; o mercado físico, com a base contra o futuro; e a inclinação da curva, do primeiro ao último vencimento. Você escolhe o pregão pela data ou anda um a um pelas setas, e baixa a tabela em CSV ou Excel."
+      ]
+    },
+    {
+      "titulo": "Curva de preços e base",
+      "paragrafos": [
+        "O gráfico da curva liga o preço de ajuste de todos os vencimentos e mostra se o mercado está em contango, com os vencimentos longos mais caros, ou em backwardation. A linha tracejada compara com o pregão anterior, com o de uma semana ou com o de um mês antes, para ver para onde a curva andou. Nos contratos cotados em dólar — soja e café arábica — um botão converte tudo para reais pelo dólar que a B3 divulga no dia, e a curva de comparação usa o dólar da data dela.",
+        "Quando a B3 publica o indicador do físico, ele entra no gráfico como o ponto à esquerda da curva, e a ferramenta calcula a base: o preço do físico menos o ajuste do primeiro vencimento. É assim com o boi gordo no estado de São Paulo, o milho em Campinas, o etanol hidratado em Paulínia e a soja FOB Santos. A tabela traz ainda a taxa implícita ao ano entre o primeiro vencimento e cada um dos demais, pelos dias úteis do cadastro de contratos da B3."
+      ]
+    },
+    {
+      "titulo": "Mercado físico, referências e praças",
+      "paragrafos": [
+        "Além do indicador do dia, a ferramenta mostra a média das últimas cotações que a B3 usa como preço de liquidação — cinco no boi gordo e no etanol, três no milho —, o indicador a prazo do milho e o prazo médio de pagamento. Na soja e no café arábica aparecem os preços de ajuste do contrato de referência no exterior, o da soja no CME Group em centavos de dólar por bushel e o do café na ICE em centavos de dólar por libra-peso, já convertidos para dólares e reais por saca e postos ao lado do futuro da B3 do mesmo mês.",
+        "O quadro de praças traz os indicadores do CEPEA/ESALQ-USP por região, no widget que o próprio CEPEA oferece para sites: boi gordo e bezerro em São Paulo e em Mato Grosso do Sul, soja em Paranaguá e no Paraná, etanol hidratado e anidro em seis estados, açúcar em São Paulo, Santos e no Nordeste, trigo no Paraná e no Rio Grande do Sul, arroz, café e algodão."
+      ]
+    },
+    {
+      "titulo": "De onde vêm os dados",
+      "paragrafos": [
+        "Os preços do pregão, as posições em aberto, os indicadores do físico e o cadastro de contratos vêm do Boletim Diário do Mercado da B3, consultado no momento do acesso, sem planilha intermediária. O boletim guarda os últimos 21 pregões; para datas mais antigas, de 2022 em diante, a ferramenta busca o arquivo de preços de derivativos da Pesquisa por Pregão da B3, que demora mais para responder e não traz volume.",
+        "Os valores são os publicados, sem recálculo. As únicas contas da ferramenta são a variação contra o ajuste anterior, a base, a diferença entre vencimentos, a taxa implícita e as conversões de unidade e de moeda, todas explicadas ao lado de cada tabela. Os indicadores do quadro de praças são do CEPEA, sob licença CC BY-NC 4.0, e por isso não entram nas exportações."
+      ]
+    }
+  ],
+  "comoUsar": [
+    "Escolha a mercadoria nos botões do topo — boi gordo, milho, soja CME, soja FOB Santos, café arábica, café conilon ou etanol hidratado. A ferramenta abre no último pregão publicado; para outra data, informe o dia e clique em Carregar, ou use as setas para andar de pregão em pregão.",
+    "Leia os três indicadores — primeiro vencimento, mercado físico e inclinação da curva — e passe o mouse no gráfico para ver o ajuste de cada vencimento. Compare com o pregão anterior, com uma semana ou com um mês antes; na soja e no café arábica, troque entre dólares e reais.",
+    "Na tabela do pregão, clique no nome de uma coluna para ordenar. Mais abaixo, confira os indicadores do físico com a base, as referências no exterior e as praças do CEPEA, trocando de grupo nos botões do quadro.",
+    "Em Histórico do contrato, escolha o vencimento ou o primeiro vencimento contínuo, clique em Carregar histórico e veja o ajuste dos últimos 5, 10 ou 21 pregões ao lado do físico. Baixe a tabela do pregão em CSV ou Excel e o histórico em CSV."
+  ],
+  "faq": [
+    {
+      "pergunta": "O que é o preço de ajuste?",
+      "resposta": "É o preço que a B3 apura no fim de cada pregão para cada vencimento e usa para o ajuste diário das posições: quem está comprado recebe ou paga a diferença entre o ajuste do dia e o do dia anterior, multiplicada pelo tamanho do contrato. É também a referência usual para marcar a mercado contratos futuros. A coluna Ajuste traz esse preço, e a variação é calculada contra o ajuste do pregão anterior."
+    },
+    {
+      "pergunta": "O que é base e por que ela importa no hedge?",
+      "resposta": "Base é a diferença entre o preço do mercado físico numa praça e o preço do contrato futuro. Quem trava o preço na bolsa continua exposto à variação da base: se ela se alarga contra você, o resultado do hedge fica diferente do planejado. A ferramenta calcula a base do indicador do físico publicado pela B3 contra o primeiro vencimento. Na sua praça a base é outra, por causa do frete, da qualidade e do prazo de pagamento; o quadro do CEPEA ajuda a comparar regiões."
+    },
+    {
+      "pergunta": "Qual a diferença entre contango e backwardation?",
+      "resposta": "Em contango, os vencimentos mais longos custam mais que os curtos, o que costuma refletir custo de carregamento, como juro e armazenagem. Em backwardation, os longos custam menos, sinal de produto escasso no curto prazo ou de expectativa de preço menor adiante. Em commodity agrícola a curva também carrega a safra e a entressafra: é comum o milho e o boi terem degraus entre vencimentos que nada têm a ver com juro. Por isso a taxa implícita da tabela serve para comparar vencimentos, não como taxa de juros."
+    },
+    {
+      "pergunta": "Por que a soja e o café aparecem em dólar?",
+      "resposta": "Porque os contratos da B3 de soja e de café arábica são cotados em dólares — por saca de 60 kg na soja do CME Group e no café arábica, por tonelada na soja FOB Santos. Para ver em reais, use o botão Em R$: a conversão usa o dólar que a B3 divulga às 16h para liquidação no dia útil seguinte, o mesmo que ela usa nesses contratos. Boi gordo, milho, café conilon e etanol hidratado são cotados em reais."
+    },
+    {
+      "pergunta": "Até que data consigo consultar?",
+      "resposta": "Os últimos 21 pregões saem do Boletim Diário da B3, com resposta rápida, volume, posição em aberto do fim do dia e indicadores do físico. De 2022 até essa janela, a ferramenta busca o arquivo histórico da B3, que demora mais e traz só os preços, o número de negócios e a posição em aberto de antes do pregão. O histórico em gráfico e os indicadores do físico cobrem só os 21 pregões que o boletim guarda. O pregão do dia aparece depois do fechamento, quando a B3 publica o ajuste."
+    }
+  ],
+  "etiquetas": [
+    "Fonte B3",
+    "Excel · CSV"
+  ],
+  "descricaoCartao": "Boi gordo, milho, soja, café e etanol na B3: pregão, curva de vencimentos, base contra o físico e praças do CEPEA.",
+  "outras": [
+    "derivativos-listados-b3",
+    "cotacao-de-moedas",
+    "indicadores-economicos",
+    "taxas-referenciais"
+  ],
+  "ordem": 8
+}
