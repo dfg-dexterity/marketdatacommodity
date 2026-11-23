@@ -13,7 +13,7 @@ Mercado da Dexterity IT Solutions).
 | Endereço | Para quê |
 | --- | --- |
 | **https://www.dexterityit.com.br/commodities-agricolas** | Página do site (Odoo) com a ferramenta incorporada — endereço público e canônico. Gerada a partir de `site/`. **Ainda não publicada.** |
-| **https://cotacao-commodities.vercel.app** | A aplicação em si, usada no `iframe` da página do site. **Projeto da Vercel ainda não criado** — o endereço está em `site/paginas/commodities-agricolas.json` (`app`) e muda ali se o projeto ganhar outro nome. |
+| **https://cotacao-commodities.vercel.app** | A aplicação em si (projeto `cotacao-commodities` do time `dexterityit` na Vercel, ligado ao GitHub `dfg-dexterity/marketdatacommodity`), usada no `iframe` da página do site. No ar desde 23/11/2026. |
 
 ## Mercadorias
 
@@ -163,12 +163,12 @@ SEO da página no painel **Otimizar SEO** do Odoo:
 - **Título:** `Cotação de commodities agrícolas: boi, milho, soja e café na B3`
 - **Descrição:** `Boi gordo, milho, soja, café e etanol na B3: preços do pregão, curva de vencimentos, base contra o mercado físico, praças do CEPEA e histórico, com Excel e CSV.`
 
-**Pendente** (nada foi publicado): criar o projeto na Vercel ligado a este repositório; criar a
-página `/commodities-agricolas` no Odoo e publicar o bloco; replicar a entrada `commodities-agricolas`
+**Pendente** (o app está na Vercel, a página do site ainda não): criar a página
+`/commodities-agricolas` no Odoo e publicar o bloco; replicar a entrada `commodities-agricolas`
 do `CATALOGO`, da `VITRINE` e do `RODAPE` de `site/build.mjs` nos outros sete repositórios do kit
 (quatro `new-mtm-*`, `cotacao-titulos-publicos`, `bndes-um` e `ibge`) e republicar a vitrine
-`/ferramentas`. Ordem: app na Vercel → página → conferir o `iframe` em janela anônima e a 390 px →
-indexação no Search Console.
+`/ferramentas`. Ordem: página → conferir o `iframe` em janela anônima e a 390 px → indexação no
+Search Console.
 
 ## Identidade visual
 
@@ -181,6 +181,14 @@ comparação e âmbar é o físico.
 
 Os tokens e o chrome vivem em `assets/dexterity.css`, mantido **idêntico** nos apps de Dados de
 Mercado. Estilos próprios desta ferramenta ficam no `<style>` do `index.html`.
+
+## Deploy
+
+Projeto **`cotacao-commodities`** no time **`dexterityit`** da Vercel, ligado ao repositório
+`dfg-dexterity/marketdatacommodity`: cada push na `main` publica em produção e cada PR ganha um
+preview. Sem build: a Vercel serve os arquivos estáticos da raiz (inclusive `lib/`, que a página
+importa) e as funções de `api/` (`vercel.json`: região `gru1`, `maxDuration` 60 s,
+`frame-ancestors *`, `noindex` em `/api/` e `/site/`). Sem variáveis de ambiente.
 
 ## Próximos passos possíveis
 
