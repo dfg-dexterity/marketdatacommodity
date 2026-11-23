@@ -12,7 +12,7 @@ Mercado da Dexterity IT Solutions).
 
 | Endereço | Para quê |
 | --- | --- |
-| **https://www.dexterityit.com.br/commodities-agricolas** | Página do site (Odoo) com a ferramenta incorporada — endereço público e canônico. Gerada a partir de `site/`. **Ainda não publicada.** |
+| **https://www.dexterityit.com.br/commodities-agricolas** | Página do site (Odoo) com a ferramenta incorporada — endereço público e canônico. Gerada a partir de `site/`. No ar desde 23/11/2026. |
 | **https://cotacao-commodities.vercel.app** | A aplicação em si (projeto `cotacao-commodities` do time `dexterityit` na Vercel, ligado ao GitHub `dfg-dexterity/marketdatacommodity`), usada no `iframe` da página do site. No ar desde 23/11/2026. |
 
 ## Mercadorias
@@ -163,12 +163,27 @@ SEO da página no painel **Otimizar SEO** do Odoo:
 - **Título:** `Cotação de commodities agrícolas: boi, milho, soja e café na B3`
 - **Descrição:** `Boi gordo, milho, soja, café e etanol na B3: preços do pregão, curva de vencimentos, base contra o mercado físico, praças do CEPEA e histórico, com Excel e CSV.`
 
-**Pendente** (o app está na Vercel, a página do site ainda não): criar a página
-`/commodities-agricolas` no Odoo e publicar o bloco; replicar a entrada `commodities-agricolas`
-do `CATALOGO`, da `VITRINE` e do `RODAPE` de `site/build.mjs` nos outros sete repositórios do kit
-(quatro `new-mtm-*`, `cotacao-titulos-publicos`, `bndes-um` e `ibge`) e republicar a vitrine
-`/ferramentas`. Ordem: página → conferir o `iframe` em janela anônima e a 390 px → indexação no
-Search Console.
+A Vercel serve `/site/*` com `Access-Control-Allow-Origin: https://www.dexterityit.com.br`: a sessão do
+Odoo no navegador lê o bloco publicado direto da Vercel (conferindo o SHA-256 com o arquivo local, sem o
+comentário do início) e grava com `ir.ui.view.save(valor, '/t[1]/t[1]/div[1]')` no idioma pt_BR — o mesmo
+caminho do editor, que gera as duas cópias do Código Incorporado.
+
+Publicada em 23/11/2026: página criada com `website.new_page` (view **6148**, key
+`website.commodities-agricolas`, `website.page` **48**), título e descrição de SEO gravados em pt_BR e
+item **55** "Commodities Agrícolas" no menu do Odoo, em Dados de Mercado. Conferida sem sessão (HTTP 200,
+título, descrição, canonical, `iframe` e rodapé). Não havia página anterior, então não há backup.
+
+**Kit comum — este repositório está à frente dos demais.** Antes de publicar, a vitrine `/ferramentas`
+foi capturada de novo (23/11/2026): a casca do site tinha mudado depois de 15/11 (e-mail como link na
+chamada final e no rodapé) e o rodapé publicado já trazia Conversor de Taxas e Indicadores Econômicos.
+O `site/casca-site.html` e o `site/build.mjs` daqui reproduzem a vitrine publicada sem diferença além
+do cartão e do item de rodapé desta ferramenta.
+
+**Pendente**: replicar `site/casca-site.html` e o `CATALOGO`, a `VITRINE` e o `RODAPE` de
+`site/build.mjs` nos outros oito repositórios do kit (quatro `new-mtm-*`, `cotacao-titulos-publicos`,
+`bndes-um`, `ibge` e `conversor`) e republicar a vitrine `/ferramentas` e a coluna "Ferramentas" do
+rodapé das demais páginas, que ainda não citam esta ferramenta. Pedir a indexação no Search Console
+(o `/sitemap.xml` do Odoo é cache e leva até 12 horas para incluir a página).
 
 ## Identidade visual
 
