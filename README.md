@@ -173,17 +173,17 @@ Publicada em 23/11/2026: página criada com `website.new_page` (view **6148**, k
 item **55** "Commodities Agrícolas" no menu do Odoo, em Dados de Mercado. Conferida sem sessão (HTTP 200,
 título, descrição, canonical, `iframe` e rodapé). Não havia página anterior, então não há backup.
 
-**Kit comum — este repositório está à frente dos demais.** Antes de publicar, a vitrine `/ferramentas`
-foi capturada de novo (23/11/2026): a casca do site tinha mudado depois de 15/11 (e-mail como link na
-chamada final e no rodapé) e o rodapé publicado já trazia Conversor de Taxas e Indicadores Econômicos.
-O `site/casca-site.html` e o `site/build.mjs` daqui reproduzem a vitrine publicada sem diferença além
-do cartão e do item de rodapé desta ferramenta.
+**Kit comum.** Antes de publicar, a vitrine `/ferramentas` foi capturada de novo (23/11/2026): a casca
+do site tinha mudado depois de 15/11 (e-mail como link na chamada final e no rodapé) e o rodapé publicado
+já trazia Conversor de Taxas e Indicadores Econômicos. No mesmo dia, o `site/casca-site.html` e o
+`site/build.mjs` daqui, acrescidos da entrada da Cotação de Metais, foram replicados nos dez repositórios
+do kit (quatro `new-mtm-*`, `cotacao-titulos-publicos`, `bndes-um`, `ibge`, `conversor`, este e
+`marketdatacommoditymetals`), e a vitrine `/ferramentas` (view 5704) e a coluna "Ferramentas" do rodapé
+das demais páginas foram republicadas no Odoo com o cartão e o link desta ferramenta. Backups das 24
+views alteradas: views inativas 6149 a 6172 (`<key>_backup_20261123`).
 
-**Pendente**: replicar `site/casca-site.html` e o `CATALOGO`, a `VITRINE` e o `RODAPE` de
-`site/build.mjs` nos outros oito repositórios do kit (quatro `new-mtm-*`, `cotacao-titulos-publicos`,
-`bndes-um`, `ibge` e `conversor`) e republicar a vitrine `/ferramentas` e a coluna "Ferramentas" do
-rodapé das demais páginas, que ainda não citam esta ferramenta. Pedir a indexação no Search Console
-(o `/sitemap.xml` do Odoo é cache e leva até 12 horas para incluir a página).
+**Pendente**: pedir a indexação no Search Console (o `/sitemap.xml` do Odoo é cache e leva até 12 horas
+para incluir a página).
 
 ## Identidade visual
 

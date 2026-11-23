@@ -132,6 +132,12 @@ const CATALOGO = {
     descricao: 'Boi gordo, milho, soja, café e etanol na B3: pregão, curva de vencimentos, base contra o físico e praças do CEPEA.',
     etiquetas: ['Fonte B3', 'Excel · CSV'],
   },
+  'cotacao-de-metais': {
+    categoria: 'Commodities',
+    nome: 'Cotação de Metais',
+    descricao: 'Cobre, alumínio, ouro e mais dez metais em Londres, Nova York, Xangai e São Paulo: preço por praça, curva de vencimentos e histórico.',
+    etiquetas: ['LME · COMEX · SHFE · B3', 'Excel · CSV'],
+  },
 }
 
 /** Vitrine /ferramentas: primeiro o grupo das quatro MTM, depois as demais. */
@@ -144,12 +150,12 @@ const VITRINE = [
   {
     titulo: 'Mercado e decisões',
     texto: 'Renda fixa, câmbio, índices e derivativos listados para o dia a dia da tesouraria — e as contas de decisão do Vale a pena?',
-    slugs: ['vale-a-pena', 'calculadora-cdb', 'conversor-de-taxas', 'titulos-publicos', 'derivativos-listados-b3', 'cotacao-de-moedas', 'moedas-bndes', 'ibge', 'indicadores-economicos', 'commodities-agricolas'],
+    slugs: ['vale-a-pena', 'calculadora-cdb', 'conversor-de-taxas', 'titulos-publicos', 'derivativos-listados-b3', 'cotacao-de-moedas', 'moedas-bndes', 'ibge', 'indicadores-economicos', 'commodities-agricolas', 'cotacao-de-metais'],
   },
 ]
 
 /** Coluna "Ferramentas" do rodapé do site. */
-const RODAPE = ['vale-a-pena', 'calculadora-mtm-ndf', 'calculadora-mtm-swap', 'calculadora-mtm-opcoes', 'taxas-referenciais', 'calculadora-cdb', 'conversor-de-taxas', 'titulos-publicos', 'derivativos-listados-b3', 'moedas-bndes', 'ibge', 'indicadores-economicos', 'commodities-agricolas']
+const RODAPE = ['vale-a-pena', 'calculadora-mtm-ndf', 'calculadora-mtm-swap', 'calculadora-mtm-opcoes', 'taxas-referenciais', 'calculadora-cdb', 'conversor-de-taxas', 'titulos-publicos', 'derivativos-listados-b3', 'moedas-bndes', 'ibge', 'indicadores-economicos', 'commodities-agricolas', 'cotacao-de-metais']
 
 const RE_RODAPE = /<div><h4>Ferramentas<\/h4><ul>[\s\S]*?<\/ul><\/div>/
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
